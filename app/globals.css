@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --corporate-bg: #F7F8FA;
+  --corporate-card: #FFFFFF;
+  --corporate-muted: #F1F3F5;
+  --corporate-text: #1F2937;
+  --corporate-subtext: #4B5563;
+  --corporate-disabled: #9CA3AF;
+  --corporate-border: #E5E7EB;
+  --corporate-primary: #374151;
+  --corporate-accent: #2563EB;
+}
+
+body {
+  background-color: var(--corporate-bg);
+  color: var(--corporate-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbars if ever needed */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F3F5;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Header vertical rotation for column titles */
+.vertical-header-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
