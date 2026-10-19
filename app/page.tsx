@@ -16,6 +16,7 @@ export default function HomePage() {
     setSelectedCell,
     updateCellStatus,
     resetToOriginal,
+    syncStatus,
   } = useDiagramStore();
 
   const [scale, setScale] = useState<number>(1.0);
@@ -45,6 +46,7 @@ export default function HomePage() {
         rows={diagramData.rows}
         selectedRowId={selectedRowId}
         onSelectRowId={setSelectedRowId}
+        syncStatus={syncStatus}
       />
 
       {/* Main Heatmap Matrix */}

@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { DiagramSummary, DiagramRow } from '@/types/diagram';
-import { RotateCcw, ZoomIn, ZoomOut, Maximize2, AlertTriangle, Layers, Filter } from 'lucide-react';
+import { SyncStatus } from '@/lib/useDiagramStore';
+import { RotateCcw, ZoomIn, ZoomOut, Maximize2, AlertTriangle, Layers, Filter, Radio } from 'lucide-react';
 
 interface HeaderProps {
   summary: DiagramSummary;
@@ -16,6 +17,7 @@ interface HeaderProps {
   rows?: DiagramRow[];
   selectedRowId?: string;
   onSelectRowId?: (rowId: string) => void;
+  syncStatus?: SyncStatus;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -28,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
   rows = [],
   selectedRowId = 'all',
   onSelectRowId,
+  syncStatus = 'connected',
 }) => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
@@ -48,6 +51,37 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="hidden xs:inline-block text-[9px] sm:text-[10px] font-semibold bg-corporate-muted text-corporate-subtext px-1.5 py-0.2 rounded border border-corporate-border">
                   PDF Oficial
                 </span>
+                {/* Live Sync Status Indicator */}
+                {syncStatus === 'connected' && (
+                  <span
+                    className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200"
+                    title="Sincronización en vivo activa entre todos los dispositivos"
+                  >
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    </span>
+                    <span>En vivo</span>
+                  </span>
+                )}
+                {syncStatus === 'connecting' && (
+                  <span
+                    className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-medium bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200"
+                    title="Conectando al canal de sincronización en tiempo real"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span>Sincronizando...</span>
+                  </span>
+                )}
+                {syncStatus === 'offline' && (
+                  <span
+                    className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border border-gray-300"
+                    title="Modo local (los cambios se guardan localmente)"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                    <span>Local</span>
+                  </span>
+                )}
               </div>
               <p className="hidden md:block text-[10.5px] text-corporate-subtext font-normal truncate">
                 Visualización ejecutiva de estado de actividades

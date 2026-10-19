@@ -1,9 +1,9 @@
-const isExport = process.env.EXPORT_FOR_GH === 'true';
+const isProd = process.env.NODE_ENV === 'production' || process.env.EXPORT_FOR_GH === 'true';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
-  basePath: isExport ? '/KOLBEN-BRP' : '',
+  basePath: isProd ? '/KOLBEN-BRP' : '',
   images: {
     unoptimized: true,
   },
