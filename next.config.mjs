@@ -1,14 +1,9 @@
-const isGithubActions = process.env.GITHUB_ACTIONS || false;
-
-let basePath = '';
-if (isGithubActions) {
-  basePath = '/KOLBEN-BRP';
-}
+const isExport = process.env.EXPORT_FOR_GH === 'true';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
-  basePath: basePath,
+  basePath: isExport ? '/KOLBEN-BRP' : '',
   images: {
     unoptimized: true,
   },

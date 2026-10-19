@@ -20,7 +20,8 @@ export default function HomePage() {
 
   const [scale, setScale] = useState<number>(1.0);
   const [autoFit, setAutoFit] = useState<boolean>(true);
-  const [colorMode, setColorMode] = useState<'soft' | 'solid'>('soft');
+  const [colorMode, setColorMode] = useState<'soft' | 'solid'>('solid');
+  const [selectedRowId, setSelectedRowId] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const handleCellClick = (cell: ActivityCell) => {
@@ -30,7 +31,7 @@ export default function HomePage() {
   };
 
   return (
-    <main className="h-screen w-screen flex flex-col bg-corporate-bg overflow-hidden">
+    <main className="h-full w-full flex flex-col bg-corporate-bg overflow-hidden">
       {/* Executive Header with Counters & Controls */}
       <Header
         summary={summary}
@@ -41,6 +42,9 @@ export default function HomePage() {
         setAutoFit={setAutoFit}
         colorMode={colorMode}
         setColorMode={setColorMode}
+        rows={diagramData.rows}
+        selectedRowId={selectedRowId}
+        onSelectRowId={setSelectedRowId}
       />
 
       {/* Main Heatmap Matrix */}
@@ -53,6 +57,7 @@ export default function HomePage() {
         scale={scale}
         autoFit={autoFit}
         colorMode={colorMode}
+        selectedRowId={selectedRowId}
       />
 
       {/* Status Modal for Interactive Updates */}
