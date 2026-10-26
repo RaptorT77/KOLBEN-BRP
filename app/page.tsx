@@ -14,6 +14,8 @@ export default function HomePage() {
     summary,
     selectedCell,
     setSelectedCell,
+    checklists,
+    updateChecklistTasks,
     updateCellStatus,
     resetToOriginal,
     syncStatus,
@@ -28,7 +30,6 @@ export default function HomePage() {
   const handleCellClick = (cell: ActivityCell) => {
     if (!cell.isEditable) return;
     setSelectedCell(cell);
-    setIsModalOpen(true);
   };
 
   return (
@@ -60,9 +61,11 @@ export default function HomePage() {
         autoFit={autoFit}
         colorMode={colorMode}
         selectedRowId={selectedRowId}
+        checklists={checklists}
+        onUpdateChecklist={updateChecklistTasks}
       />
 
-      {/* Status Modal for Interactive Updates */}
+      {/* Status Modal for Interactive Updates (Fallback) */}
       {isModalOpen && (
         <StatusModal
           cell={selectedCell}

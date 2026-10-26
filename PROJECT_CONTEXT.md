@@ -47,35 +47,27 @@ Este documento contiene la memoria técnica, decisiones de diseño, auditoría d
    - Persistencia en la nube para que nuevos dispositivos carguen el estado consolidado.
    - Indicador visual ejecutivo en la cabecera: `🟢 En vivo` con animación pulsante.
 
+6. **Requerimiento de Menú Emergente de Checklist y Ajuste de Columnas PMQ756**:
+   - Ajuste de columnas para `PMQ756 3M Cargador`: Únicamente activas las columnas del documento oficial: 10 (LOTO), 20 (Panel de control y potencia), 30 (Neumático), 60 (Guías), 110 (Sensores) y 220 (Banda transportadora). Las demás (150, 180, 190) fueron desactivadas y pasadas a gris.
+   - Selección de fila interactiva: Permite seleccionar cualquier equipo (ej. `TRANSPORTADORES` o `PMQ756 3M Cargador`) haciendo clic sobre la fila.
+   - Menú emergente de actividades: Al pasar el cursor sobre cualquier columna activa de la fila seleccionada, se despliega un popover flotante con las actividades exactas del grupo y sus checkboxes interactivos.
+   - Regla de negocio automatizada:
+     - 0 tareas marcadas: La celda se coloca en Rojo (`PEND.`).
+     - 1 a N-1 tareas marcadas: La celda se coloca en Ámbar (`RUN`).
+     - Todas las tareas marcadas: La celda se coloca en Verde (`OK`).
+   - Sincronización en tiempo real de los checkboxes entre todos los dispositivos abiertos.
+
 ---
 
 ## 3. Auditoría de Datos del PDF (`data/activities.json`)
 
-El archivo `data/activities.json` fue verificado celda por celda a partir del PDF original:
+El archivo `data/activities.json` fue verificado celda por celda a partir del documento oficial:
 
 - **Estructura**: Matriz rectangular de **16 Filas de Equipos × 30 Columnas de Actividades = 480 Celdas**.
-- **Equipos (Filas R01 a R16)**:
-  1. `R01`: AGV's (12 Actividades activas)
-  2. `R02`: Lavadora de pallets (10 Actividades activas)
-  3. `R03`: Transportador de rodillos de entrada a lavadora (9 Actividades activas)
-  4. `R04`: Transportador de rodillos de salida a lavadora (9 Actividades activas)
-  5. `R05`: Transportador de rodillos de rodillos (9 Actividades activas)
-  6. `R06`: Mesa de transferencia de 90° (9 Actividades activas)
-  7. `R07`: Carro de transferencia (9 Actividades activas)
-  8. `R08`: Transportador de rodillos por gravedad (9 Actividades activas)
-  9. `R09`: Elevador de pallets (10 Actividades activas)
-  10. `R10`: Desapilador de pallets (10 Actividades activas)
-  11. `R11`: Estación de inspección (10 Actividades activas)
-  12. `R12`: Estación de ensamble 1 (12 Actividades activas)
-  13. `R13`: Estación de ensamble 2 (12 Actividades activas)
-  14. `R14`: Estación de ensamble 3 (12 Actividades activas)
-  15. `R15`: Estación de pruebas (12 Actividades activas)
-  16. `R16`: Estación de empaque (12 Actividades activas)
-
 - **Distribución de Celdas**:
-  - **314 celdas deshabilitadas (`disabled`)**: Celdas grises que representan actividades no aplicables para ese equipo. `isEditable: false`.
-  - **166 celdas activas (`pending`)**: Celdas rojas iniciales que representan actividades de mantenimiento asignadas. `isEditable: true`.
-  - **0 celdas ambiguas o ilegibles**: 100% verificado contra el archivo vectorial.
+  - **317 celdas deshabilitadas (`disabled`)**: Celdas grises que representan actividades no aplicables para ese equipo. `isEditable: false`.
+  - **163 celdas activas (`pending`)**: Celdas rojas iniciales que representan actividades de mantenimiento asignadas. `isEditable: true`.
+  - **Checklists Detallados**: Catálogo en `data/equipmentChecklists.ts` con las tareas oficiales de inspección y mantenimiento por grupo.
 
 ---
 
@@ -84,26 +76,28 @@ El archivo `data/activities.json` fue verificado celda por celda a partir del PD
 ```
 BRP/
 ├── app/
-│   ├── globals.css         # Estilos globales, variables de paleta corporate y reset
-│   ├── layout.tsx          # Wrapper raíz y metadata
-│   └── page.tsx            # Vista principal: orquesta el store, cabecera, matriz y modal
+│   ├── globals.css              # Estilos globales, variables de paleta corporate y reset
+│   ├── layout.tsx               # Wrapper raíz y metadata
+│   └── page.tsx                 # Vista principal: orquesta el store, cabecera, matriz y modal
 ├── components/
-│   ├── Header.tsx          # Cabecera ejecutiva con contadores en vivo, leyenda, zoom y filtro
-│   ├── HeatmapMatrix.tsx   # Matriz responsiva con freeze panes 2D, etiquetas horizontales
-│   └── StatusModal.tsx     # Diálogo para alternar entre PEND., RUN y OK
+│   ├── Header.tsx               # Cabecera ejecutiva con contadores en vivo, leyenda, zoom y filtro
+│   ├── HeatmapMatrix.tsx        # Matriz responsiva con freeze panes 2D, selección de fila y hover popover
+│   ├── ChecklistPopover.tsx     # Menú emergente interactivo con checkboxes y cálculo de estado
+│   └── StatusModal.tsx          # Diálogo para alternar entre PEND., RUN y OK
 ├── data/
-│   └── activities.json     # 480 celdas validadas
+│   ├── activities.json          # 480 celdas validadas con Zod
+│   └── equipmentChecklists.ts   # Tareas y grupos oficiales para PMQ756 y grupos estándar
 ├── lib/
-│   ├── schema.ts           # Esquemas Zod para validación estricta en tiempo de ejecución
-│   ├── supabaseClient.ts   # Conexión Supabase Realtime y constantes de canal/tabla
-│   ├── useDiagramStore.ts  # Hook central de estado: Broadcast, Supabase DB, localStorage
-│   └── utils.ts            # Utilidad cn (clsx + tailwind-merge)
+│   ├── schema.ts                # Esquemas Zod para validación estricta en tiempo de ejecución
+│   ├── supabaseClient.ts        # Conexión Supabase Realtime y constantes de canal/tabla
+│   ├── useDiagramStore.ts       # Hook central de estado: Broadcast, Supabase DB, localStorage
+│   └── utils.ts                 # Utilidad cn (clsx + tailwind-merge)
 ├── types/
-│   └── diagram.ts          # Interfaces TypeScript: ActivityCell, ActivityStatus, DiagramData
-├── next.config.mjs         # Exportación estática con basePath: '/KOLBEN-BRP'
-├── tailwind.config.ts      # Tokens de color corporativos
-├── AGENTS.md               # Instrucciones automáticas para agentes de IA
-└── PROJECT_CONTEXT.md      # Este documento maestro
+│   └── diagram.ts               # Interfaces TypeScript: ActivityCell, ActivityStatus, DiagramData
+├── next.config.mjs              # Exportación estática con basePath: '/KOLBEN-BRP'
+├── tailwind.config.ts           # Tokens de color corporativos
+├── AGENTS.md                    # Instrucciones automáticas para agentes de IA
+└── PROJECT_CONTEXT.md           # Este documento maestro
 ```
 
 ---

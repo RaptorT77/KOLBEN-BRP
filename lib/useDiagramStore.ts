@@ -8,6 +8,7 @@ import { supabase, REALTIME_ROOM, STATE_ROW_ID } from '@/lib/supabaseClient';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 const STORAGE_KEY = 'brp_heatmap_activities_v1';
+const CHECKLISTS_STORAGE_KEY = 'brp_heatmap_checklists_v1';
 
 // Validate initial data strictly using Zod
 const initialData: DiagramData = DiagramDataSchema.parse(rawData);
@@ -17,6 +18,7 @@ export type SyncStatus = 'connected' | 'connecting' | 'offline';
 export function useDiagramStore() {
   const [cells, setCells] = useState<ActivityCell[]>(initialData.cells);
   const [selectedCell, setSelectedCell] = useState<ActivityCell | null>(null);
+  const [checklists, setChecklists] = useState<Record<string, string[]>>({});
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('connecting');
   const channelRef = useRef<RealtimeChannel | null>(null);
 
@@ -81,6 +83,15 @@ export function useDiagramStore() {
             })
           );
         }
+        // Load stored checklists
+        const storedChecklists = localStorage.getItem(CHECKLISTS_STORAGE_KEY);
+        if (storedChecklists) {
+          try {
+            setChecklists(JSON.parse(storedChecklists));
+          } catch {
+            // ignore
+          }
+        }
       }
     } catch (e) {
       console.warn('Local storage load warning:', e);
@@ -123,14 +134,30 @@ export function useDiagramStore() {
               applySingleRemoteUpdate(payload.cellId, payload.newStatus);
             }
           })
+          // Instantaneous peer broadcast when checklist items are toggled
+          .on('broadcast', { event: 'checklist_updated' }, ({ payload }) => {
+            if (payload && payload.cellId && Array.isArray(payload.completedTaskIds)) {
+              setChecklists((prev) => {
+                const next = { ...prev, [payload.cellId]: payload.completedTaskIds };
+                try {
+                  localStorage.setItem(CHECKLISTS_STORAGE_KEY, JSON.stringify(next));
+                } catch {
+                  // ignore
+                }
+                return next;
+              });
+            }
+          })
           // Instantaneous peer broadcast when reset is triggered
           .on('broadcast', { event: 'reset_all' }, () => {
             try {
               localStorage.removeItem(STORAGE_KEY);
+              localStorage.removeItem(CHECKLISTS_STORAGE_KEY);
             } catch {
               // ignore
             }
             setCells(initialData.cells.map((c) => ({ ...c, status: c.initialStatus })));
+            setChecklists({});
             setSelectedCell(null);
           })
           // Postgres changes fallback
@@ -261,12 +288,14 @@ export function useDiagramStore() {
     // 1. Local storage cleanup
     try {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(CHECKLISTS_STORAGE_KEY);
     } catch (e) {
       console.warn('LocalStorage clear error:', e);
     }
 
     // 2. Local state reset
     setCells(initialData.cells.map((c) => ({ ...c, status: c.initialStatus })));
+    setChecklists({});
     if (selectedCell) {
       const original = initialData.cells.find((c) => c.id === selectedCell.id);
       if (original) setSelectedCell({ ...original });
@@ -293,6 +322,46 @@ export function useDiagramStore() {
         if (error) console.error('Cloud reset error:', error);
       });
   }, [selectedCell]);
+
+  // Update checklist items for a cell and automatically calculate status
+  const updateChecklistTasks = useCallback(
+    (cellId: string, completedTaskIds: string[], totalTasksCount: number) => {
+      setChecklists((prev) => {
+        const next = { ...prev, [cellId]: completedTaskIds };
+        try {
+          localStorage.setItem(CHECKLISTS_STORAGE_KEY, JSON.stringify(next));
+        } catch (e) {
+          console.warn('LocalStorage save error for checklist:', e);
+        }
+        return next;
+      });
+
+      // Broadcast checklist over realtime
+      if (channelRef.current) {
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'checklist_updated',
+          payload: { cellId, completedTaskIds, timestamp: Date.now() },
+        });
+      }
+
+      // Regla de estado por checklist:
+      // - 0 tareas marcadas: 'pending' (Rojo / PEND.)
+      // - 1 a N-1 tareas marcadas: 'in_progress' (Ámbar / RUN)
+      // - N tareas marcadas (todas): 'completed' (Verde / OK)
+      let newStatus: ActivityStatus = 'pending';
+      if (completedTaskIds.length === 0) {
+        newStatus = 'pending';
+      } else if (completedTaskIds.length === totalTasksCount) {
+        newStatus = 'completed';
+      } else {
+        newStatus = 'in_progress';
+      }
+
+      updateCellStatus(cellId, newStatus);
+    },
+    [updateCellStatus]
+  );
 
   // Dynamic summary calculation
   const summary = useMemo(() => {
@@ -323,6 +392,8 @@ export function useDiagramStore() {
     summary,
     selectedCell,
     setSelectedCell,
+    checklists,
+    updateChecklistTasks,
     updateCellStatus,
     cycleCellStatus,
     resetToOriginal,

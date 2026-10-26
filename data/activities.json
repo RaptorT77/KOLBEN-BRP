@@ -6,8 +6,8 @@
     "totalColumns": 30,
     "summary": {
       "totalActivities": 480,
-      "disabledActivities": 314,
-      "pendingActivities": 166,
+      "disabledActivities": 317,
+      "pendingActivities": 163,
       "inProgressActivities": 0,
       "completedActivities": 0
     }
@@ -1130,9 +1130,9 @@
       "colId": "col_150",
       "colCode": 150,
       "colName": "150: SISTEMA DE CARGADOR",
-      "initialStatus": "pending",
-      "status": "pending",
-      "isEditable": true
+      "initialStatus": "disabled",
+      "status": "disabled",
+      "isEditable": false
     },
     {
       "id": "row_3_col_160",
@@ -1163,9 +1163,9 @@
       "colId": "col_180",
       "colCode": 180,
       "colName": "180: PUERTA FRONTAL",
-      "initialStatus": "pending",
-      "status": "pending",
-      "isEditable": true
+      "initialStatus": "disabled",
+      "status": "disabled",
+      "isEditable": false
     },
     {
       "id": "row_3_col_190",
@@ -1174,9 +1174,9 @@
       "colId": "col_190",
       "colCode": 190,
       "colName": "190: DRIVERS",
-      "initialStatus": "pending",
-      "status": "pending",
-      "isEditable": true
+      "initialStatus": "disabled",
+      "status": "disabled",
+      "isEditable": false
     },
     {
       "id": "row_3_col_200",

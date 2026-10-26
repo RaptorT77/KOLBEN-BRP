@@ -24,21 +24,29 @@ Este archivo proporciona el contexto completo y las reglas operativas obligatori
   - **16 filas de Equipos** (Línea E: R01 a R16).
   - **30 columnas de Actividades** (C01 a C30).
   - **Total de Celdas**: Exactamente **480 celdas**.
-  - **Celdas Deshabilitadas (Gris)**: **314 celdas** (`isEditable: false`, `initialStatus: "disabled"`). No pueden ser activadas ni editadas bajo ninguna circunstancia.
-  - **Celdas Editables (Activas)**: **166 celdas** (`isEditable: true`, `initialStatus: "pending"`).
+  - **Celdas Deshabilitadas (Gris)**: **317 celdas** (`isEditable: false`, `initialStatus: "disabled"`). No pueden ser activadas ni editadas. (Incluye columnas desactivadas 150, 180 y 190 para PMQ756 Cargador).
+  - **Celdas Editables (Activas)**: **163 celdas** (`isEditable: true`, `initialStatus: "pending"`). Para PMQ756 3M Cargador, los únicos grupos activos corresponden a: 10 (LOTO), 20 (Panel de control y potencia), 30 (Neumático), 60 (Guías), 110 (Sensores) y 220 (Banda transportadora).
 
 ---
 
-## 3. Convenciones Visuales y de Estado
+## 3. Convenciones Visuales, Menús Emergentes y Checklists
 
-Las celdas de estado tienen abreviaturas horizontales en texto negro y fondos específicos según la directiva del usuario:
+### Selección de Fila y Menú Emergente Interactivo
+- **Selección de Fila**: Se puede seleccionar cualquier fila con el mouse haciendo clic sobre el nombre del equipo en la columna fija de la izquierda (ej. `TRANSPORTADORES` o `PMQ756 3M Cargador`). La fila activa se resalta visiblemente.
+- **Menú Emergente (Checklist Oficial)**: Al posicionar el cursor sobre cualquier columna activa de la fila seleccionada (ej. `10: LOTO`), se despliega un menú flotante con las actividades específicas de esa columna/equipo extraídas del plan oficial (ej. `PREV C 3M PMQ756`).
+- **Regla Estricta de Transición de Estados por Checkbox**:
+  - **0 casillas marcadas**: Estado en Rojo (`PEND.`, `#EF4444`, texto negro).
+  - **1 a N-1 casillas marcadas**: Estado en Ámbar (`RUN`, `#F59E0B`, texto negro).
+  - **Todas las casillas marcadas**: Estado en Verde (`OK`, `#22C55E`, texto negro).
+- **Acciones Rápidas**: Botones de "Marcar Todos (OK)" y "Desmarcar (PEND.)".
+- **Sincronización en Tiempo Real**: Los estados de checkboxes y de celdas se sincronizan instantáneamente en `localStorage` y en tiempo real con Supabase Realtime (`checklist_updated` / `cell_updated`).
 
 | Estado | Abreviatura | Color de Fondo | Color de Texto | Significado |
 | :--- | :---: | :---: | :---: | :--- |
-| **Pendiente** | `PEND.` | Rojo (`#EF4444` / Tailwind `bg-red-500`) | Negro (`#000000`, `font-black`) | Actividad por realizar (estado original de las 166 activas) |
-| **En Proceso** | `RUN` | Ámbar (`#F59E0B` / Tailwind `bg-amber-500`) | Negro (`#000000`, `font-black`) | Actividad actualmente en ejecución |
-| **Concluido** | `OK` | Verde (`#22C55E` / Tailwind `bg-green-500`) | Negro (`#000000`, `font-black`) | Actividad concluida satisfactoriamente |
-| **Deshabilitada** | `—` | Gris (`#E5E7EB` / Tailwind `bg-gray-200`) | Gris Oscuro (`#4B5563`, `font-bold`) | Intersección no aplicable según el PDF (bloqueada) |
+| **Pendiente** | `PEND.` | Rojo (`#EF4444` / Tailwind `bg-red-500`) | Negro (`#000000`, `font-black`) | Actividad por realizar (0 tareas marcadas) |
+| **En Proceso** | `RUN` | Ámbar (`#F59E0B` / Tailwind `bg-amber-500`) | Negro (`#000000`, `font-black`) | Actividad en ejecución (1 a N-1 tareas marcadas) |
+| **Concluido** | `OK` | Verde (`#22C55E` / Tailwind `bg-green-500`) | Negro (`#000000`, `font-black`) | Actividad concluida (todas las tareas marcadas) |
+| **Deshabilitada** | `—` | Gris (`#E5E7EB` / Tailwind `bg-gray-200`) | Gris Oscuro (`#4B5563`, `font-bold`) | Intersección no aplicable según el plan técnico |
 
 ---
 
