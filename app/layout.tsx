@@ -10,8 +10,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Mapa de Calor de Mantenimiento — Línea E",
-  description: "Dashboard ejecutivo para visualización y actualización del estado de actividades de mantenimiento de la Línea E.",
+  title: "Relación de mantenimientos preventivos Linea \"E\" Producto 9X3",
+  description: "Dashboard ejecutivo oficial para visualización y actualización del estado de actividades de mantenimiento de la Línea E (Producto 9X3).",
 };
 
 export default function RootLayout({
