@@ -538,7 +538,7 @@ export const HeatmapMatrix: React.FC<HeatmapMatrixProps> = ({
         </div>
       </div>
 
-      {/* Menú Emergente de Checklist oficial (aparece sobre la columna activa al pasar el mouse) */}
+      {/* Menú Emergente de Checklist oficial (aparece sobre la columna activa al pasar el mouse o al tocar en móvil) */}
       {activePopover && (
         <ChecklistPopover
           isOpen={true}
@@ -553,6 +553,7 @@ export const HeatmapMatrix: React.FC<HeatmapMatrixProps> = ({
           onToggleAll={handleToggleAll}
           onClose={() => setActivePopover(null)}
           position={activePopover.position}
+          isPinned={activePopover.pinned}
           onMouseEnter={handlePopoverMouseEnter}
           onMouseLeave={handlePopoverMouseLeave}
         />
