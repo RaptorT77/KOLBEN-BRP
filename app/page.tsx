@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { HeatmapMatrix } from '@/components/HeatmapMatrix';
 import { StatusModal } from '@/components/StatusModal';
 import { PrintReportModal } from '@/components/PrintReportModal';
+import { PrintDashboardModal } from '@/components/PrintDashboardModal';
 import { ActivityCell } from '@/types/diagram';
 
 export default function HomePage() {
@@ -28,6 +29,7 @@ export default function HomePage() {
   const [selectedRowId, setSelectedRowId] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isPrintReportOpen, setIsPrintReportOpen] = useState<boolean>(false);
+  const [isPrintDashboardOpen, setIsPrintDashboardOpen] = useState<boolean>(false);
 
   const handleCellClick = (cell: ActivityCell) => {
     if (!cell.isEditable) return;
@@ -36,11 +38,12 @@ export default function HomePage() {
 
   return (
     <main className="h-full w-full flex flex-col bg-corporate-bg overflow-hidden">
-      {/* Executive Header with Counters, Controls & Botón Imprimir Informe */}
+      {/* Executive Header with Counters, Controls & Botones de Impresión */}
       <Header
         summary={summary}
         onReset={resetToOriginal}
         onPrintReport={() => setIsPrintReportOpen(true)}
+        onPrintDashboard={() => setIsPrintDashboardOpen(true)}
         scale={scale}
         setScale={setScale}
         autoFit={autoFit}
@@ -88,6 +91,18 @@ export default function HomePage() {
           rows={diagramData.rows}
           cells={cells}
           checklists={checklists}
+          summary={summary}
+        />
+      )}
+
+      {/* Print Dashboard Modal (Dashboard 1 Sola Página en PDF) */}
+      {isPrintDashboardOpen && (
+        <PrintDashboardModal
+          isOpen={isPrintDashboardOpen}
+          onClose={() => setIsPrintDashboardOpen(false)}
+          columns={diagramData.columns}
+          rows={diagramData.rows}
+          cells={cells}
           summary={summary}
         />
       )}

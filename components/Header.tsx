@@ -3,12 +3,13 @@
 import React, { useState } from 'react';
 import { DiagramSummary, DiagramRow } from '@/types/diagram';
 import { SyncStatus } from '@/lib/useDiagramStore';
-import { RotateCcw, ZoomIn, ZoomOut, Maximize2, AlertTriangle, Layers, Filter, Radio, FileText, Printer } from 'lucide-react';
+import { RotateCcw, ZoomIn, ZoomOut, Maximize2, AlertTriangle, Layers, Filter, Radio, FileText, Printer, LayoutGrid } from 'lucide-react';
 
 interface HeaderProps {
   summary: DiagramSummary;
   onReset?: () => void;
   onPrintReport?: () => void;
+  onPrintDashboard?: () => void;
   scale: number;
   setScale: (scale: number) => void;
   autoFit: boolean;
@@ -25,6 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
   summary,
   onReset,
   onPrintReport,
+  onPrintDashboard,
   scale,
   setScale,
   autoFit,
@@ -260,15 +262,28 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden xs:inline">Manual PDF</span>
             </a>
 
-            {/* Botón Imprimir Informe (Reemplaza a Restablecer según solicitud oficial) */}
+            {/* Botón Imprimir Dashboard (1 sola página PDF del estatus actual del heatmap) */}
+            <button
+              type="button"
+              onClick={onPrintDashboard}
+              title="Imprimir solo el Dashboard actual en PDF (1 página con matriz y créditos)"
+              className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-black text-[#173D60] bg-amber-100 hover:bg-amber-200 active:scale-95 px-2.5 sm:px-3 py-1 rounded-md border border-amber-300 transition-all shadow-xs cursor-pointer touch-manipulation"
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-[#173D60] stroke-[2.5]" />
+              <span className="hidden xs:inline">Imprimir Dashboard</span>
+              <span className="xs:hidden">Dashboard</span>
+            </button>
+
+            {/* Botón Imprimir Informe */}
             <button
               type="button"
               onClick={onPrintReport}
-              title="Imprimir informe ejecutivo completo en PDF"
-              className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-black text-white bg-gradient-to-r from-[#173D60] to-[#1F4E79] hover:from-[#1F4E79] hover:to-[#2B6EA9] active:scale-95 px-3 py-1 rounded-md border border-[#173D60] transition-all shadow-xs cursor-pointer touch-manipulation"
+              title="Imprimir informe ejecutivo completo detallado en PDF"
+              className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-black text-white bg-gradient-to-r from-[#173D60] to-[#1F4E79] hover:from-[#1F4E79] hover:to-[#2B6EA9] active:scale-95 px-2.5 sm:px-3 py-1 rounded-md border border-[#173D60] transition-all shadow-xs cursor-pointer touch-manipulation"
             >
               <Printer className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Imprimir Informe</span>
+              <span className="hidden xs:inline">Imprimir Informe</span>
+              <span className="xs:hidden">Informe</span>
             </button>
           </div>
         </div>
