@@ -68,6 +68,12 @@ Este documento contiene la memoria técnica, decisiones de diseño, auditoría d
    - **Compatibilidad con Barras del Sistema**: Uso de unidades de altura dinámicas (`88dvh` / `88vh`) y margen inferior seguro (`env(safe-area-inset-bottom)`) para evitar que la barra de inicio de iOS o la barra de navegación de Android tapen los botones de acción.
    - **Bloqueo de Desplazamiento de Fondo**: Evita movimientos involuntarios o temblores de la matriz mientras el operador desliza la lista de actividades.
 
+9. **Requerimiento de Identidad Gráfica Institucional (Logos Oficiales y Título Normalizado)**:
+   - **Esquina Superior Izquierda**: Logotipo oficial de KS (`LOGO_KS-1.bmp` / `.png`).
+   - **Centro**: Título oficial normalizado: `"Relación de mantenimientos preventivos Linea \"E\" Producto 9X3"` con tipografía ejecutiva de alto impacto (`text-[#173D60]`, negrita extra) y etiquetas de metadatos.
+   - **Esquina Superior Derecha**: Logotipo oficial de BRP / JI&FIX SIGMA (`LOGO_JIFIX_BRP-1.jpg`).
+   - **Armonización Estética**: Fila de cabecera dedicada a la identidad corporativa y segunda fila optimizada para contadores de semáforo, selector de equipos y botones de acción.
+
 ---
 
 ## 3. Auditoría de Datos del PDF (`data/activities.json`)
