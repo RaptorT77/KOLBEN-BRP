@@ -44,3 +44,64 @@ body {
   transform: rotate(180deg);
   white-space: nowrap;
 }
+
+/* Reglas de impresión profesional para PDF */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm 6mm 8mm 6mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    height: auto !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ocultar elementos no deseados en impresión */
+  .no-print,
+  header,
+  main > :not(.fixed) {
+    display: none !important;
+  }
+
+  .fixed {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .fixed > div {
+    max-width: 100% !important;
+    max-height: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+  }
+
+  .printable-report-content {
+    padding: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .page-break-before {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  .page-break-inside-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+

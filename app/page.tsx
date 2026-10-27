@@ -5,6 +5,7 @@ import { useDiagramStore } from '@/lib/useDiagramStore';
 import { Header } from '@/components/Header';
 import { HeatmapMatrix } from '@/components/HeatmapMatrix';
 import { StatusModal } from '@/components/StatusModal';
+import { PrintReportModal } from '@/components/PrintReportModal';
 import { ActivityCell } from '@/types/diagram';
 
 export default function HomePage() {
@@ -26,6 +27,7 @@ export default function HomePage() {
   const [colorMode, setColorMode] = useState<'soft' | 'solid'>('solid');
   const [selectedRowId, setSelectedRowId] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isPrintReportOpen, setIsPrintReportOpen] = useState<boolean>(false);
 
   const handleCellClick = (cell: ActivityCell) => {
     if (!cell.isEditable) return;
@@ -34,10 +36,11 @@ export default function HomePage() {
 
   return (
     <main className="h-full w-full flex flex-col bg-corporate-bg overflow-hidden">
-      {/* Executive Header with Counters & Controls */}
+      {/* Executive Header with Counters, Controls & Botón Imprimir Informe */}
       <Header
         summary={summary}
         onReset={resetToOriginal}
+        onPrintReport={() => setIsPrintReportOpen(true)}
         scale={scale}
         setScale={setScale}
         autoFit={autoFit}
@@ -73,6 +76,19 @@ export default function HomePage() {
           onSelectStatus={(cellId, newStatus) => {
             updateCellStatus(cellId, newStatus);
           }}
+        />
+      )}
+
+      {/* Print Report Modal (Informe Ejecutivo Completo en PDF) */}
+      {isPrintReportOpen && (
+        <PrintReportModal
+          isOpen={isPrintReportOpen}
+          onClose={() => setIsPrintReportOpen(false)}
+          columns={diagramData.columns}
+          rows={diagramData.rows}
+          cells={cells}
+          checklists={checklists}
+          summary={summary}
         />
       )}
     </main>

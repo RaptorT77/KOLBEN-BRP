@@ -3,11 +3,12 @@
 import React, { useState } from 'react';
 import { DiagramSummary, DiagramRow } from '@/types/diagram';
 import { SyncStatus } from '@/lib/useDiagramStore';
-import { RotateCcw, ZoomIn, ZoomOut, Maximize2, AlertTriangle, Layers, Filter, Radio, FileText } from 'lucide-react';
+import { RotateCcw, ZoomIn, ZoomOut, Maximize2, AlertTriangle, Layers, Filter, Radio, FileText, Printer } from 'lucide-react';
 
 interface HeaderProps {
   summary: DiagramSummary;
-  onReset: () => void;
+  onReset?: () => void;
+  onPrintReport?: () => void;
   scale: number;
   setScale: (scale: number) => void;
   autoFit: boolean;
@@ -23,6 +24,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   summary,
   onReset,
+  onPrintReport,
   scale,
   setScale,
   autoFit,
@@ -32,7 +34,6 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectRowId,
   syncStatus = 'connected',
 }) => {
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const basePath = process.env.NODE_ENV === 'production' ? '/KOLBEN-BRP' : '';
 
   return (
@@ -259,59 +260,19 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden xs:inline">Manual PDF</span>
             </a>
 
-            {/* Reset button */}
+            {/* Botón Imprimir Informe (Reemplaza a Restablecer según solicitud oficial) */}
             <button
               type="button"
-              onClick={() => setShowResetConfirm(true)}
-              title="Restablecer valores del PDF original"
-              className="flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-corporate-subtext hover:text-corporate-text bg-white hover:bg-corporate-muted px-2 py-1 rounded border border-corporate-border transition-colors shadow-xs"
+              onClick={onPrintReport}
+              title="Imprimir informe ejecutivo completo en PDF"
+              className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-black text-white bg-gradient-to-r from-[#173D60] to-[#1F4E79] hover:from-[#1F4E79] hover:to-[#2B6EA9] active:scale-95 px-3 py-1 rounded-md border border-[#173D60] transition-all shadow-xs cursor-pointer touch-manipulation"
             >
-              <RotateCcw className="w-3 h-3" />
-              <span className="hidden sm:inline">Restablecer</span>
+              <Printer className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Imprimir Informe</span>
             </button>
           </div>
         </div>
       </header>
-
-      {/* Confirmation Modal for Reset */}
-      {showResetConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[1px] p-4">
-          <div className="bg-white rounded-lg shadow-xl border border-corporate-border w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-            <div className="p-4 flex items-start gap-3">
-              <div className="p-2 bg-amber-50 text-amber-600 rounded-full border border-amber-200 flex-shrink-0">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-bold text-corporate-text">
-                  ¿Restablecer estados originales?
-                </h3>
-                <p className="text-xs text-corporate-subtext mt-1">
-                  Esta acción revertirá todas las actividades al estado original del PDF oficial (163 PEND. y 317 deshabilitadas).
-                </p>
-              </div>
-            </div>
-            <div className="px-4 py-2.5 bg-corporate-bg border-t border-corporate-border flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setShowResetConfirm(false)}
-                className="px-3 py-1 text-xs font-medium text-corporate-subtext hover:text-corporate-text bg-white border border-corporate-border rounded hover:bg-corporate-muted transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onReset();
-                  setShowResetConfirm(false);
-                }}
-                className="px-3 py-1 text-xs font-medium text-white bg-corporate-primary hover:bg-corporate-text rounded transition-colors shadow-xs"
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };
