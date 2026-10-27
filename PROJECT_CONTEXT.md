@@ -74,6 +74,19 @@ Este documento contiene la memoria técnica, decisiones de diseño, auditoría d
    - **Esquina Superior Derecha**: Logotipo oficial de BRP / JI&FIX SIGMA (`LOGO_JIFIX_BRP-1.jpg`).
    - **Armonización Estética**: Fila de cabecera dedicada a la identidad corporativa y segunda fila optimizada para contadores de semáforo, selector de equipos y botones de acción.
 
+10. **Requerimiento de Botón "Imprimir Informe", Exportación a PDF Consolidado y Créditos Oficiales**:
+   - **Sustitución de Botón**: El botón "Restablecer" fue reemplazado por **"Imprimir Informe"** (`Printer` icon) en la esquina superior derecha de la barra de acciones.
+   - **Modal de Vista Previa y PDF (`PrintReportModal`)**: Despliega un informe ejecutivo completo que integra:
+     1. Encabezado institucional con logotipos (`LOGO_KS-1.bmp` a la izquierda y `LOGO_JIFIX_BRP-1.jpg` a la derecha), título oficial y fecha/hora de emisión.
+     2. Resumen semafórico con cifras en vivo (Total 480, Deshabilitadas 317, Pendientes, En Proceso, Concluidas y Avance Global).
+     3. **Dashboard Completo**: Matriz total del mapa de calor (16 equipos × 30 columnas) con las abreviaturas y colores exactos.
+     4. **Desglose de Grupos y Checkboxes en Tiempo Real**: Reporte detallado por cada equipo de sus columnas activas, mostrando el estado último de cada checkbox (`[✓]` completada, `[NA]` no aplica, `[○]` pendiente).
+     5. **Créditos Oficiales al Final del Reporte**:
+        - Jose Antonio De Jesus Galicia (`dejesus.antonio@hcaa.com.mx`)
+        - HC Advanced Automation S.A de C.V. (`https://www.hcaa.com.mx/`)
+        - Puebla, Puebla, MX
+   - **Estilos de Impresión (`@media print`)**: Formato horizontal A4 (`landscape`), márgenes calibrados, forzado de colores exactos y exclusión de elementos de interfaz para exportar un PDF impecable en 1 clic.
+
 ---
 
 ## 3. Auditoría de Datos del PDF (`data/activities.json`)
