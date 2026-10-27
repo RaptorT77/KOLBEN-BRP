@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { DiagramSummary, DiagramRow } from '@/types/diagram';
 import { SyncStatus } from '@/lib/useDiagramStore';
-import { RotateCcw, ZoomIn, ZoomOut, Maximize2, AlertTriangle, Layers, Filter, Radio } from 'lucide-react';
+import { RotateCcw, ZoomIn, ZoomOut, Maximize2, AlertTriangle, Layers, Filter, Radio, FileText } from 'lucide-react';
 
 interface HeaderProps {
   summary: DiagramSummary;
@@ -153,6 +153,18 @@ export const Header: React.FC<HeaderProps> = ({
                 </select>
               </div>
             )}
+
+            {/* Manual PDF button */}
+            <a
+              href="Manual_Usuario_Mapa_Calor_Linea_E.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Descargar Manual de Usuario Oficial en PDF"
+              className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-[#1F4E79] hover:text-[#173D60] bg-blue-50 hover:bg-blue-100 active:bg-blue-200 px-2 py-1 rounded border border-blue-200 transition-colors shadow-xs"
+            >
+              <FileText className="w-3 h-3 text-[#1F4E79]" />
+              <span className="hidden xs:inline">Manual PDF</span>
+            </a>
 
             {/* Reset button */}
             <button

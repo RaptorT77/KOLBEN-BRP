@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Manual de Usuario — Mapa de Calor de Mantenimiento Línea E</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    @page {
+      size: A4 portrait;
+      margin: 14mm 14mm 16mm 14mm;
+      @bottom-right {
+        content: counter(page);
+        font-family: 'Inter', sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #1e293b;
+      background: #ffffff;
+      line-height: 1.45;
+      font-size: 9.5pt;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .page {
+      page-break-after: always;
+      position: relative;
+      height: 100%;
+    }
+
+    .page:last-child {
+      page-break-after: avoid;
+    }
+
+    /* Encabezado y Pie de Página en Impresión */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #1F4E79;
+      margin-bottom: 16px;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-pill {
+      background: #173D60;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 8pt;
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .header-title-text {
+      font-size: 8.5pt;
+      font-weight: 700;
+      color: #1F4E79;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .header-doc-id {
+      font-size: 7.5pt;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    /* Portada Ejecutiva */
+    .cover-container {
+      padding: 24px 8px 10px 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 940px;
+    }
+
+    .cover-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .cover-logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #0f172a;
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: #ffffff;
+    }
+
+    .cover-logo-badge span.brand-name {
+      font-size: 13pt;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      color: #ffffff;
+    }
+
+    .cover-logo-badge span.brand-sep {
+      color: #38bdf8;
+      font-weight: 400;
+    }
+
+    .cover-logo-badge span.sub-brand {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 1px;
+    }
+
+    .cover-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ecfdf5;
+      border: 1px solid #10b981;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 8pt;
+      font-weight: 700;
+      color: #047857;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+    }
+
+    .cover-hero {
+      margin-top: 10px;
+      margin-bottom: 24px;
+    }
+
+    .cover-pre-title {
+      font-size: 9.5pt;
+      font-weight: 800;
+      color: #0284c7;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .cover-title {
+      font-size: 25pt;
+      font-weight: 900;
+      color: #0f172a;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+
+    .cover-subtitle {
+      font-size: 11.5pt;
+      color: #475569;
+      font-weight: 500;
+      line-height: 1.4;
+      max-width: 600px;
+      margin-bottom: 20px;
+    }
+
+    .cover-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .meta-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .meta-label {
+      font-size: 7pt;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+    }
+
+    .meta-value {
+      font-size: 9.5pt;
+      font-weight: 800;
+      color: #0f172a;
+      word-break: break-all;
+    }
+
+    .cover-image-box {
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15);
+      margin-bottom: 24px;
+      background: #f1f5f9;
+    }
+
+    .cover-image-box img {
+      width: 100%;
+      height: 290px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .cover-footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 8pt;
+      color: #64748b;
+    }
+
+    /* Componentes de Contenido */
+    h2.section-heading {
+      font-size: 14pt;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      margin-top: 6px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 6px;
+    }
+
+    h2.section-heading span.num {
+      background: #1F4E79;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10pt;
+      font-weight: 800;
+    }
+
+    p.lead {
+      font-size: 9.5pt;
+      color: #334155;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    /* Tabla de Estados */
+    .status-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+      font-size: 8.5pt;
+    }
+
+    .status-table th {
+      background: #173D60;
+      color: white;
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+
+    .badge-preview {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 900;
+      font-size: 8pt;
+      text-align: center;
+      min-width: 50px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .badge-pend { background: #EF4444; color: #000000; border: 1px solid #DC2626; }
+    .badge-run { background: #F59E0B; color: #000000; border: 1px solid #D97706; }
+    .badge-ok { background: #22C55E; color: #000000; border: 1px solid #16A34A; }
+    .badge-dis { background: #E5E7EB; color: #4B5563; border: 1px solid #D1D5DB; }
+
+    /* Tarjetas de Pasos (Steps) */
+    .step-card {
+      display: flex;
+      gap: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      page-break-inside: avoid;
+    }
+
+    .step-number {
+      background: #1F4E79;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 10pt;
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(31, 78, 121, 0.3);
+    }
+
+    .step-body {
+      flex: 1;
+    }
+
+    .step-title {
+      font-weight: 700;
+      font-size: 9.5pt;
+      color: #0f172a;
+      margin-bottom: 3px;
+    }
+
+    .step-desc {
+      font-size: 8.5pt;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    /* Caja de Alerta / Tip */
+    .callout {
+      border-left: 4px solid #0284c7;
+      background: #f0f9ff;
+      padding: 8px 12px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 12px;
+      page-break-inside: avoid;
+    }
+
+    .callout-title {
+      font-size: 8.5pt;
+      font-weight: 700;
+      color: #0369a1;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .callout-body {
+      font-size: 8pt;
+      color: #334155;
+    }
+
+    .callout-warning {
+      border-left-color: #f59e0b;
+      background: #fffbeb;
+    }
+    .callout-warning .callout-title { color: #b45309; }
+
+    .callout-success {
+      border-left-color: #10b981;
+      background: #ecfdf5;
+    }
+    .callout-success .callout-title { color: #047857; }
+
+    /* Muestra Gráfica con Figuras */
+    .fig-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+      page-break-inside: avoid;
+    }
+
+    .fig-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f8fafc;
+    }
+
+    .fig-card img {
+      width: 100%;
+      height: 190px;
+      object-fit: cover;
+      display: block;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .fig-caption {
+      padding: 6px 8px;
+      font-size: 7.5pt;
+      font-weight: 600;
+      color: #475569;
+      text-align: center;
+      background: #ffffff;
+    }
+
+    /* Cierre Multi-Dispositivo */
+    .dismiss-methods-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+      margin-bottom: 14px;
+    }
+
+    .dismiss-card {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .dismiss-icon {
+      font-size: 14pt;
+      margin-bottom: 3px;
+    }
+
+    .dismiss-title {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+
+    .dismiss-desc {
+      font-size: 7pt;
+      color: #64748b;
+      line-height: 1.25;
+    }
+
+    /* FAQ List */
+    .faq-item {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #e2e8f0;
+      page-break-inside: avoid;
+    }
+
+    .faq-q {
+      font-weight: 700;
+      font-size: 8.5pt;
+      color: #1e293b;
+      margin-bottom: 2px;
+    }
+
+    .faq-a {
+      font-size: 8pt;
+      color: #475569;
+      line-height: 1.35;
+    }
+
+    .url-link {
+      color: #0284c7;
+      font-weight: 700;
+      text-decoration: underline;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8pt;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== PÁGINA 1: PORTADA ==================== -->
+  <div class="page cover-container">
+    <div>
+      <div class="cover-top">
+        <div class="cover-logo-badge">
+          <span class="brand-name">KOLBEN</span>
+          <span class="brand-sep">|</span>
+          <span class="sub-brand">BRP</span>
+        </div>
+        <div class="cover-status-badge">
+          <span class="pulse-dot"></span>
+          <span>SINCRONIZACIÓN EN TIEMPO REAL ACTIVA</span>
+        </div>
+      </div>
+
+      <div class="cover-hero">
+        <div class="cover-pre-title">Manual Oficial de Usuario y Procedimiento Operativo</div>
+        <h1 class="cover-title">Mapa de Calor de Mantenimiento — Línea E</h1>
+        <p class="cover-subtitle">
+          Guía integral para la consulta, navegación y actualización colaborativa de actividades de mantenimiento preventivo y correctivo en tiempo real entre smartphones, tablets y PC.
+        </p>
+      </div>
+
+      <div class="cover-meta-grid">
+        <div class="meta-card">
+          <div class="meta-label">Acceso en Vivo</div>
+          <div class="meta-value" style="font-size: 8pt; color: #0284c7;">raptort77.github.io/KOLBEN-BRP/</div>
+        </div>
+        <div class="meta-card">
+          <div class="meta-label">Compatibilidad</div>
+          <div class="meta-value">Móvil, Tablet y PC</div>
+        </div>
+        <div class="meta-card">
+          <div class="meta-label">Base Técnica</div>
+          <div class="meta-value">Mapa Calor PDF Oficial</div>
+        </div>
+        <div class="meta-card">
+          <div class="meta-label">Latencia Sincronización</div>
+          <div class="meta-value">&lt; 50 ms (Supabase)</div>
+        </div>
+      </div>
+
+      <div class="cover-image-box">
+        <img src="assets/img_overview.png" alt="Vista General del Mapa de Calor Línea E">
+      </div>
+    </div>
+
+    <div class="cover-footer">
+      <div><strong>Documento Técnico</strong>: SOP-MNT-LINEA-E-V1.0</div>
+      <div>Planta de Producción BRP &bull; Sistema KOLBEN</div>
+      <div>Octubre 2026</div>
+    </div>
+  </div>
+
+  <!-- ==================== PÁGINA 2: ESTRUCTURA Y CÓDIGOS DE ESTADO ==================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="header-brand">
+        <span class="header-pill">KOLBEN-BRP</span>
+        <span class="header-title-text">Manual de Operación &bull; Línea E</span>
+      </div>
+      <div class="header-doc-id">Sección 1 & 2 &bull; Acceso y Estados</div>
+    </div>
+
+    <h2 class="section-heading">
+      <span class="num">1</span>
+      Acceso a la Plataforma y Compatibilidad
+    </h2>
+    <p class="lead">
+      La plataforma no requiere instalación de software ni descargas desde tiendas de aplicaciones. Se ejecuta directamente desde cualquier navegador web moderno (Google Chrome, Safari, Edge, Firefox, Samsung Internet) ingresando al enlace oficial:
+    </p>
+
+    <div class="callout callout-success">
+      <div class="callout-title">🌐 Enlace Oficial de Producción</div>
+      <div class="callout-body">
+        <span class="url-link">https://raptort77.github.io/KOLBEN-BRP/</span>
+        &mdash; Guarda este enlace en los marcadores de tu navegador o agrégalo a la pantalla de inicio de tu smartphone o tablet para acceder en 1 toque.
+      </div>
+    </div>
+
+    <h2 class="section-heading">
+      <span class="num">2</span>
+      Estructura de la Matriz y Códigos de Estado
+    </h2>
+    <p class="lead">
+      La matriz reproduce fielmente el plano técnico de la Línea E, compuesto por <strong>16 filas de equipos</strong> (Transportadores, PMQ1231 Gantry OP05, PMQ756 Cargador, Kanzaky OP10 a OP80, Robodrills OP50/OP60, Caseta y Extractor) y <strong>30 columnas de actividades</strong> agrupadas del código 10 al 300 (total exacto: 480 celdas).
+    </p>
+
+    <table class="status-table">
+      <thead>
+        <tr>
+          <th style="width: 15%;">Semáforo</th>
+          <th style="width: 25%;">Nombre del Estado</th>
+          <th style="width: 35%;">Criterio de Cálculo Oficial</th>
+          <th style="width: 25%;">Acción Requerida</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge-preview badge-pend">PEND.</span></td>
+          <td><strong>Pendiente</strong> (Rojo #EF4444)</td>
+          <td>0 casillas aplicables concluidas. La tarea no ha iniciado.</td>
+          <td>Iniciar labores e ingresar al checklist.</td>
+        </tr>
+        <tr>
+          <td><span class="badge-preview badge-run">RUN</span></td>
+          <td><strong>En Proceso</strong> (Ámbar #F59E0B)</td>
+          <td>Entre 1 y N-1 casillas aplicables concluidas. Mantenimiento activo.</td>
+          <td>Continuar las tareas restantes del grupo.</td>
+        </tr>
+        <tr>
+          <td><span class="badge-preview badge-ok">OK</span></td>
+          <td><strong>Concluido</strong> (Verde #22C55E)</td>
+          <td>El 100% de tareas aplicables están marcadas OK (o todas son NA).</td>
+          <td>Actividad completada y validada en el turno.</td>
+        </tr>
+        <tr>
+          <td><span class="badge-preview badge-dis">&mdash;</span></td>
+          <td><strong>Deshabilitado</strong> (Gris #E5E7EB)</td>
+          <td>Intersección no aplicable para ese equipo según el PDF oficial.</td>
+          <td>Bloqueada por diseño; no requiere acción.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="fig-grid">
+      <div class="fig-card">
+        <img src="assets/img_row_selected.png" alt="Selección de Fila en Columna Izquierda">
+        <div class="fig-caption">Fig 1: Selección de equipo en la columna izquierda fija (Indicador dorado 'Activa').</div>
+      </div>
+      <div class="fig-card">
+        <img src="assets/img_checklist_modal.png" alt="Checklist Oficial en Pantalla">
+        <div class="fig-caption">Fig 2: Ventana emergente ejecutiva con checklist numerado y casillas OK y NA.</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">📌 Paneles Congelados Bidimensionales (Freeze Panes 2D)</div>
+      <div class="callout-body">
+        Al desplazarte horizontal o verticalmente en teléfonos móviles o PC, <strong>la columna de equipos siempre permanece fija a la izquierda</strong> y <strong>los encabezados de actividades permanecen fijos arriba</strong>, garantizando que nunca pierdas de vista la coordenada que estás editando.
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PÁGINA 3: PASO A PASO PARA ACTUALIZAR ACTIVIDADES ==================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="header-brand">
+        <span class="header-pill">KOLBEN-BRP</span>
+        <span class="header-title-text">Manual de Operación &bull; Línea E</span>
+      </div>
+      <div class="header-doc-id">Sección 3 &bull; Flujo de Actualización</div>
+    </div>
+
+    <h2 class="section-heading">
+      <span class="num">3</span>
+      Procedimiento Paso a Paso para Actualizar Actividades
+    </h2>
+    <p class="lead">
+      Sigue estos 4 pasos sencillos para registrar el avance de cualquier mantenimiento. Los cambios se difunden al instante a todos los supervisores y pantallas de la planta:
+    </p>
+
+    <div class="step-card">
+      <div class="step-number">1</div>
+      <div class="step-body">
+        <div class="step-title">Paso 1: Seleccionar el Equipo de Trabajo</div>
+        <div class="step-desc">
+          En la columna izquierda fija, toca o haz clic sobre el nombre del equipo a intervenir (ej. <strong>PMQ756 3M Cargador</strong> o <strong>PMQ759 3M Kanzaky OP30</strong>). La fila se resaltará en azul marino con una etiqueta dorada que indica <span style="background: #fbbf24; color: #0f172a; font-weight: 800; padding: 1px 4px; border-radius: 3px; font-size: 7.5pt;">ACTIVA</span>.
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-number">2</div>
+      <div class="step-body">
+        <div class="step-title">Paso 2: Abrir la Casilla de Actividad</div>
+        <div class="step-desc">
+          Toca la celda activa que deseas actualizar (ej. columna <strong>10: LOTO</strong> o <strong>30: Neumático</strong>). Inmediatamente se desplegará la <strong>Ventana Emergente del Checklist Oficial</strong> perteneciente a ese grupo con sus ítems técnicos normalizados (ej. 10.1, 10.2...).
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-number">3</div>
+      <div class="step-body">
+        <div class="step-title">Paso 3: Marcar los Checkboxes (OK / NA)</div>
+        <div class="step-desc">
+          Para cada tarea del checklist dispones de dos casillas de control independientes:
+          <ul style="margin-top: 4px; margin-left: 18px; line-height: 1.45;">
+            <li><strong>Casilla OK (Verde)</strong>: Márcala al concluir satisfactoriamente la verificación física.</li>
+            <li><strong>Casilla NA (No Aplica)</strong>: Márcala si esa tarea específica no aplica para esa intervención. <em>Al marcar NA, el renglón se tacha y se excluye del porcentaje y del cálculo del semáforo.</em></li>
+            <li><strong>Acciones Rápidas</strong>: Utiliza los botones inferiores <strong>"Marcar OK"</strong> (completa todas las tareas activas) o <strong>"Desmarcar"</strong> para reiniciar rápidamente.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-number">4</div>
+      <div class="step-body">
+        <div class="step-title">Paso 4: Sincronización Automática Instantánea</div>
+        <div class="step-desc">
+          No existe un botón "Guardar". Cada vez que tocas una casilla, el estado se guarda al instante en la nube (<strong style="color: #059669;">&lt; 50 milisegundos</strong>) y se refleja en los teléfonos de todo el equipo de mantenimiento sin necesidad de recargar la página.
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ Regla de Exclusividad por Coordenada (Fila &times; Columna)</div>
+      <div class="callout-body">
+        Cada casilla de la matriz es estrictamente independiente. Si marcas las tareas de <strong>TRANSPORTADORES &times; 10 LOTO</strong>, estas <strong>NO</strong> alteran las tareas de <strong>PMQ756 Cargador &times; 10 LOTO</strong>. Cada máquina mantiene su propio registro histórico exclusivo.
+      </div>
+    </div>
+
+    <div class="callout callout-success">
+      <div class="callout-title">💡 Indicador de Estado en Cabecera</div>
+      <div class="callout-body">
+        En la parte superior de la pantalla verás siempre el indicador:
+        <span style="background: #ecfdf5; border: 1px solid #10b981; color: #047857; font-weight: 800; padding: 1px 6px; border-radius: 4px; font-size: 7.5pt; margin-left: 4px;">🟢 En vivo</span>. Esto confirma que tu dispositivo está conectado al canal WebSocket de alta velocidad. Si se muestra <span style="background: #f1f5f9; color: #475569; font-weight: 700; padding: 1px 5px; border-radius: 4px; font-size: 7.5pt;">⚪ Local</span>, los cambios se almacenan en tu memoria local y se enviarán automáticamente en cuanto se restablezca la señal.
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PÁGINA 4: MÓVILES Y PREGUNTAS FRECUENTES ==================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="header-brand">
+        <span class="header-pill">KOLBEN-BRP</span>
+        <span class="header-title-text">Manual de Operación &bull; Línea E</span>
+      </div>
+      <div class="header-doc-id">Sección 4 & 5 &bull; Móviles & FAQ</div>
+    </div>
+
+    <h2 class="section-heading">
+      <span class="num">4</span>
+      Uso en Teléfonos Inteligentes y Tablets
+    </h2>
+    <p class="lead">
+      La plataforma está 100% optimizada para uso en piso de producción con teléfonos celulares y tablets rugerizadas:
+    </p>
+
+    <div style="display: flex; gap: 14px; margin-bottom: 12px; align-items: center;">
+      <div style="width: 140px; flex-shrink: 0; border: 2px solid #0f172a; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+        <img src="assets/img_mobile_popover.png" alt="Vista Móvil de Ventana Emergente" style="width: 100%; display: block;">
+      </div>
+      <div style="flex: 1;">
+        <div style="font-weight: 700; font-size: 9pt; color: #0f172a; margin-bottom: 4px;">
+          Modal Centrado con Fondo Oscuro Protector
+        </div>
+        <p style="font-size: 8pt; color: #475569; line-height: 1.4; margin-bottom: 6px;">
+          Al tocar cualquier celda desde tu teléfono, la ventana se despliega como un diálogo modal centrado con fondo oscuro protector. Esto evita que la ventana se corte con los bordes de la pantalla o con las barras de navegación de Android o iOS.
+        </p>
+        <div style="font-weight: 700; font-size: 8.5pt; color: #1F4E79; margin-bottom: 3px;">
+          4 Formas de Cerrar la Ventana en Cualquier Dispositivo:
+        </div>
+        <div class="dismiss-methods-grid">
+          <div class="dismiss-card">
+            <div class="dismiss-icon">👆</div>
+            <div class="dismiss-title">Tocar Fuera</div>
+            <div class="dismiss-desc">Toca en cualquier parte oscura del fondo.</div>
+          </div>
+          <div class="dismiss-card">
+            <div class="dismiss-icon">✖️</div>
+            <div class="dismiss-title">Botón "X"</div>
+            <div class="dismiss-desc">En la esquina superior derecha.</div>
+          </div>
+          <div class="dismiss-card">
+            <div class="dismiss-icon">🔘</div>
+            <div class="dismiss-title">Botón Cerrar</div>
+            <div class="dismiss-desc">Al pie de la ventana emergente.</div>
+          </div>
+          <div class="dismiss-card">
+            <div class="dismiss-icon">⌨️</div>
+            <div class="dismiss-title">Tecla Esc</div>
+            <div class="dismiss-desc">Si utilizas teclado físico o tablet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-heading">
+      <span class="num">5</span>
+      Preguntas Frecuentes y Buenas Prácticas (FAQ)
+    </h2>
+
+    <div class="faq-item">
+      <div class="faq-q">¿Qué sucede si marco todas las tareas de un grupo como NA (No Aplica)?</div>
+      <div class="faq-a">
+        El sistema detecta automáticamente que el equipo tiene 0 tareas obligatorias pendientes, por lo que la celda pasa al estado <strong>OK (Verde)</strong> con la indicación interna <em>OK (Todos NA)</em>.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">¿Puedo filtrar la pantalla para ver únicamente el equipo que me corresponde?</div>
+      <div class="faq-a">
+        Sí. En la barra superior encontrarás el desplegable <strong>"Todos los Equipos"</strong>. Al seleccionar tu máquina (ej. <em>PMQ760 3M Kanzaky OP40</em>), la tabla ocultará temporalmente el resto para trabajar con máxima comodidad en pantallas pequeñas.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">¿Qué ocurre si dos técnicos abren la misma casilla al mismo tiempo?</div>
+      <div class="faq-a">
+        Supabase Realtime resuelve los eventos por orden de llegada con latencia inferior a 50 milisegundos. Cuando el compañero marque una casilla, la verás actualizarse en tu pantalla sin tener que presionar F5 ni recargar.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">¿El botón "Restablecer" borra el trabajo de los demás?</div>
+      <div class="faq-a">
+        El botón Restablecer solicita una doble confirmación de seguridad y reinicia la matriz completa a los valores iniciales del PDF oficial. Se recomienda utilizarlo únicamente al inicio de un nuevo ciclo mayor de mantenimiento con autorización del líder de área.
+      </div>
+    </div>
+
+    <div style="margin-top: 18px; padding: 10px 14px; background: #0f172a; border-radius: 8px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; font-size: 8pt;">
+      <div>
+        <strong>Soporte Técnico &bull; KOLBEN BRP</strong><br>
+        <span style="color: #94a3b8;">Sistema de Gestión y Control Visual de Mantenimiento</span>
+      </div>
+      <div style="text-align: right;">
+        <span style="color: #38bdf8; font-weight: 700;">Línea E &bull; Planta Juárez / Querétaro</span><br>
+        <span style="color: #94a3b8;">Manual V1.0 &bull; 2026</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
