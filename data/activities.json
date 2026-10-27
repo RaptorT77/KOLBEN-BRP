@@ -6,8 +6,8 @@
     "totalColumns": 30,
     "summary": {
       "totalActivities": 480,
-      "disabledActivities": 316,
-      "pendingActivities": 164,
+      "disabledActivities": 314,
+      "pendingActivities": 166,
       "inProgressActivities": 0,
       "completedActivities": 0
     }
@@ -2890,9 +2890,9 @@
       "colId": "col_250",
       "colCode": 250,
       "colName": "250: TRANSPORTADOR",
-      "initialStatus": "disabled",
-      "status": "disabled",
-      "isEditable": false
+      "initialStatus": "pending",
+      "status": "pending",
+      "isEditable": true
     },
     {
       "id": "row_8_col_260",
@@ -2901,9 +2901,9 @@
       "colId": "col_260",
       "colCode": 260,
       "colName": "260: EXTRACTOR DE NEBLINA",
-      "initialStatus": "disabled",
-      "status": "disabled",
-      "isEditable": false
+      "initialStatus": "pending",
+      "status": "pending",
+      "isEditable": true
     },
     {
       "id": "row_8_col_270",

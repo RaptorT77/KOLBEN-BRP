@@ -40,8 +40,8 @@ Este archivo proporciona el contexto completo y las reglas operativas obligatori
     16. `PMQ781 3M Extractor de rebaba`
   - **30 columnas de Actividades** (C01 a C30, grupos 10 a 300 con items numerados oficialmente ej. `10.1`, `40.3`, `300.1`).
   - **Total de Celdas**: Exactamente **480 celdas**.
-  - **Celdas Deshabilitadas (Gris)**: **316 celdas** (`isEditable: false`, `initialStatus: "disabled"`). No pueden ser activadas ni editadas. (Incluye columnas desactivadas 150, 180 y 190 para PMQ756 Cargador).
-  - **Celdas Editables (Activas)**: **164 celdas** (`isEditable: true`, `initialStatus: "pending"`). Incluye columna 220 (Banda transportadora) para PMQ757 3M Kanzaky OP10 y PMQ756 Cargador.
+  - **Celdas Deshabilitadas (Gris)**: **314 celdas** (`isEditable: false`, `initialStatus: "disabled"`). No pueden ser activadas ni editadas. (Incluye columnas desactivadas 150, 180 y 190 para PMQ756 Cargador).
+  - **Celdas Editables (Activas)**: **166 celdas** (`isEditable: true`, `initialStatus: "pending"`). Incluye columna 220 para PMQ757 y PMQ756, y columnas 250 (Transportador) y 260 (Extractor de neblina) para PMQ761 3M Robodrill OP50-1.
 
 ---
 
