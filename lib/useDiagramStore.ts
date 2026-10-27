@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import rawData from '@/data/activities.json';
 import { DiagramDataSchema } from '@/lib/schema';
-import { ActivityCell, ActivityStatus, DiagramData } from '@/types/diagram';
+import { ActivityCell, ActivityStatus, CellChecklistState, DiagramData } from '@/types/diagram';
 import { supabase, REALTIME_ROOM, STATE_ROW_ID } from '@/lib/supabaseClient';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -15,10 +15,23 @@ const initialData: DiagramData = DiagramDataSchema.parse(rawData);
 
 export type SyncStatus = 'connected' | 'connecting' | 'offline';
 
+export function normalizeChecklistState(val: any): CellChecklistState {
+  if (Array.isArray(val)) {
+    return { completed: val, na: [] };
+  }
+  if (val && typeof val === 'object') {
+    return {
+      completed: Array.isArray(val.completed) ? val.completed : [],
+      na: Array.isArray(val.na) ? val.na : [],
+    };
+  }
+  return { completed: [], na: [] };
+}
+
 export function useDiagramStore() {
   const [cells, setCells] = useState<ActivityCell[]>(initialData.cells);
   const [selectedCell, setSelectedCell] = useState<ActivityCell | null>(null);
-  const [checklists, setChecklists] = useState<Record<string, string[]>>({});
+  const [checklists, setChecklists] = useState<Record<string, CellChecklistState>>({});
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('connecting');
   const channelRef = useRef<RealtimeChannel | null>(null);
 
@@ -87,7 +100,14 @@ export function useDiagramStore() {
         const storedChecklists = localStorage.getItem(CHECKLISTS_STORAGE_KEY);
         if (storedChecklists) {
           try {
-            setChecklists(JSON.parse(storedChecklists));
+            const raw = JSON.parse(storedChecklists);
+            const parsed: Record<string, CellChecklistState> = {};
+            if (raw && typeof raw === 'object') {
+              for (const key of Object.keys(raw)) {
+                parsed[key] = normalizeChecklistState(raw[key]);
+              }
+            }
+            setChecklists(parsed);
           } catch {
             // ignore
           }
@@ -136,9 +156,15 @@ export function useDiagramStore() {
           })
           // Instantaneous peer broadcast when checklist items are toggled
           .on('broadcast', { event: 'checklist_updated' }, ({ payload }) => {
-            if (payload && payload.cellId && Array.isArray(payload.completedTaskIds)) {
+            if (payload && payload.cellId) {
+              const state = normalizeChecklistState(
+                payload.checklistState || {
+                  completed: payload.completedTaskIds,
+                  na: payload.naTaskIds,
+                }
+              );
               setChecklists((prev) => {
-                const next = { ...prev, [payload.cellId]: payload.completedTaskIds };
+                const next = { ...prev, [payload.cellId]: state };
                 try {
                   localStorage.setItem(CHECKLISTS_STORAGE_KEY, JSON.stringify(next));
                 } catch {
@@ -323,11 +349,21 @@ export function useDiagramStore() {
       });
   }, [selectedCell]);
 
-  // Update checklist items for a cell and automatically calculate status
+  // Update checklist items for a cell and automatically calculate status with NA support
   const updateChecklistTasks = useCallback(
-    (cellId: string, completedTaskIds: string[], totalTasksCount: number) => {
+    (
+      cellId: string,
+      completedTaskIds: string[],
+      naTaskIds: string[],
+      allTaskIds: string[]
+    ) => {
+      const stateObj: CellChecklistState = {
+        completed: completedTaskIds,
+        na: naTaskIds,
+      };
+
       setChecklists((prev) => {
-        const next = { ...prev, [cellId]: completedTaskIds };
+        const next = { ...prev, [cellId]: stateObj };
         try {
           localStorage.setItem(CHECKLISTS_STORAGE_KEY, JSON.stringify(next));
         } catch (e) {
@@ -341,20 +377,37 @@ export function useDiagramStore() {
         channelRef.current.send({
           type: 'broadcast',
           event: 'checklist_updated',
-          payload: { cellId, completedTaskIds, timestamp: Date.now() },
+          payload: {
+            cellId,
+            completedTaskIds,
+            naTaskIds,
+            checklistState: stateObj,
+            timestamp: Date.now(),
+          },
         });
       }
 
-      // Regla de estado por checklist:
-      // - 0 tareas marcadas: 'pending' (Rojo / PEND.)
-      // - 1 a N-1 tareas marcadas: 'in_progress' (Ámbar / RUN)
-      // - N tareas marcadas (todas): 'completed' (Verde / OK)
+      // Regla de estado por checklist con casillas NA:
+      // Tareas aplicables (se excluyen las marcadas como NA del cálculo de estado)
+      const applicableTasks = allTaskIds.filter((id) => !naTaskIds.includes(id));
+      const applicableCount = applicableTasks.length;
+      const completedApplicableCount = applicableTasks.filter((id) =>
+        completedTaskIds.includes(id)
+      ).length;
+
       let newStatus: ActivityStatus = 'pending';
-      if (completedTaskIds.length === 0) {
+
+      if (applicableCount === 0) {
+        // Si todas las casillas son NA, el renglón no tiene pendientes
+        newStatus = 'completed';
+      } else if (completedApplicableCount === 0) {
+        // 0 tareas aplicables realizadas -> Rojo (PEND.)
         newStatus = 'pending';
-      } else if (completedTaskIds.length === totalTasksCount) {
+      } else if (completedApplicableCount === applicableCount) {
+        // Todas las tareas aplicables realizadas -> Verde (OK)
         newStatus = 'completed';
       } else {
+        // Al menos 1 pero menos del total aplicable -> Ámbar (RUN)
         newStatus = 'in_progress';
       }
 

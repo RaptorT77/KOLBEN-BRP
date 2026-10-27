@@ -21,8 +21,24 @@ Este archivo proporciona el contexto completo y las reglas operativas obligatori
 - **Fuente de Verdad**: `Mapa_Calor_Mantenimiento_Linea_E.pdf` (almacenado en la raíz).
 - **Prohibido agregar**: No inventar nombres de equipos, actividades, fechas, responsables, notas o porcentajes que no figuren en el PDF.
 - **Estructura de la Matriz**:
-  - **16 filas de Equipos** (Línea E: R01 a R16).
-  - **30 columnas de Actividades** (C01 a C30).
+  - **16 filas de Equipos** (Línea E: R01 a R16 con nombres normalizados de operaciones):
+    1. `TRANSPORTADORES`
+    2. `PMQ1231 3M Gantry OP05`
+    3. `PMQ756 3M Cargador`
+    4. `PMQ757 3M Kanzaky OP10`
+    5. `PMQ758 3M Kanzaky OP20`
+    6. `PMQ759 3M Kanzaky OP30`
+    7. `PMQ760 3M Kanzaky OP40`
+    8. `PMQ761 3M Robodrill OP50-1`
+    9. `PMQ762 3M Robodrill OP60-1`
+    10. `PMQ763 3M Robodrill OP50-2`
+    11. `PMQ764 3M Robodrill OP60-2`
+    12. `PMQ765 3M Kanzaky OP70-1`
+    13. `PMQ766 3M Kanzaky OP70-2`
+    14. `PMQ767 3M Kanzaky OP80`
+    15. `PMQ768 CASETA`
+    16. `PMQ781 3M Extractor de rebaba`
+  - **30 columnas de Actividades** (C01 a C30, grupos 10 a 300 con items numerados oficialmente ej. `10.1`, `40.3`, `300.1`).
   - **Total de Celdas**: Exactamente **480 celdas**.
   - **Celdas Deshabilitadas (Gris)**: **317 celdas** (`isEditable: false`, `initialStatus: "disabled"`). No pueden ser activadas ni editadas. (Incluye columnas desactivadas 150, 180 y 190 para PMQ756 Cargador).
   - **Celdas Editables (Activas)**: **163 celdas** (`isEditable: true`, `initialStatus: "pending"`). Para PMQ756 3M Cargador, los únicos grupos activos corresponden a: 10 (LOTO), 20 (Panel de control y potencia), 30 (Neumático), 60 (Guías), 110 (Sensores) y 220 (Banda transportadora).
@@ -32,14 +48,19 @@ Este archivo proporciona el contexto completo y las reglas operativas obligatori
 ## 3. Convenciones Visuales, Menús Emergentes y Checklists
 
 ### Selección de Fila y Menú Emergente Interactivo
-- **Selección de Fila**: Se puede seleccionar cualquier fila con el mouse haciendo clic sobre el nombre del equipo en la columna fija de la izquierda (ej. `TRANSPORTADORES` o `PMQ756 3M Cargador`). La fila activa se resalta visiblemente.
-- **Menú Emergente (Checklist Oficial)**: Al posicionar el cursor sobre cualquier columna activa de la fila seleccionada (ej. `10: LOTO`), se despliega un menú flotante con las actividades específicas de esa columna/equipo extraídas del plan oficial (ej. `PREV C 3M PMQ756`).
+- **Selección de Fila**: Se puede seleccionar cualquier fila con el mouse haciendo clic sobre el nombre del equipo en la columna fija de la izquierda (ej. `TRANSPORTADORES`, `PMQ759 3M Kanzaky OP30`, etc.). La fila activa se resalta visiblemente.
+- **Menú Emergente (Checklist Oficial)**: Al posicionar el cursor sobre cualquier columna activa de la fila seleccionada (ej. `10: LOTO`), se despliega un menú flotante con las actividades específicas de esa columna extraídas del catálogo oficial de 30 grupos.
+- **Exclusividad por Coordenada (Fila × Columna)**:
+  - Cada celda (`${rowId}_${colId}`) mantiene su propio estado de checkboxes de forma totalmente independiente. Por ejemplo, `TRANSPORTADORES × 10 LOTO` tiene un registro único de casillas marcadas que no altera ni comparte con `PMQ759 3M Kanzaky OP30 × 10 LOTO`.
+- **Casilla adicional "NA" (No Aplica)**:
+  - Cada actividad cuenta con una casilla adicional denominada **NA**.
+  - Al marcar **NA**, ese renglón se excluye del cálculo de estado de la celda (no se toma en cuenta en el conteo de tareas pendientes ni completadas).
 - **Regla Estricta de Transición de Estados por Checkbox**:
-  - **0 casillas marcadas**: Estado en Rojo (`PEND.`, `#EF4444`, texto negro).
-  - **1 a N-1 casillas marcadas**: Estado en Ámbar (`RUN`, `#F59E0B`, texto negro).
-  - **Todas las casillas marcadas**: Estado en Verde (`OK`, `#22C55E`, texto negro).
+  - **0 casillas aplicables marcadas**: Estado en Rojo (`PEND.`, `#EF4444`, texto negro).
+  - **1 a N-1 casillas aplicables marcadas**: Estado en Ámbar (`RUN`, `#F59E0B`, texto negro).
+  - **Todas las casillas aplicables marcadas** (o todas marcadas como NA): Estado en Verde (`OK`, `#22C55E`, texto negro).
 - **Acciones Rápidas**: Botones de "Marcar Todos (OK)" y "Desmarcar (PEND.)".
-- **Sincronización en Tiempo Real**: Los estados de checkboxes y de celdas se sincronizan instantáneamente en `localStorage` y en tiempo real con Supabase Realtime (`checklist_updated` / `cell_updated`).
+- **Sincronización en Tiempo Real**: Los estados de checkboxes (OK y NA) y de celdas se sincronizan instantáneamente en `localStorage` y en tiempo real con Supabase Realtime (`checklist_updated` / `cell_updated`).
 
 | Estado | Abreviatura | Color de Fondo | Color de Texto | Significado |
 | :--- | :---: | :---: | :---: | :--- |

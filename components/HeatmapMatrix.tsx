@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { ActivityCell, ActivityStatus, DiagramColumn, DiagramRow } from '@/types/diagram';
+import { ActivityCell, ActivityStatus, CellChecklistState, DiagramColumn, DiagramRow } from '@/types/diagram';
 import { cn } from '@/lib/utils';
 import { ChecklistPopover } from '@/components/ChecklistPopover';
 import { getChecklistForCell, ChecklistGroup } from '@/data/equipmentChecklists';
@@ -17,8 +17,13 @@ interface HeatmapMatrixProps {
   autoFit: boolean;
   colorMode: 'soft' | 'solid';
   selectedRowId?: string;
-  checklists: Record<string, string[]>;
-  onUpdateChecklist: (cellId: string, completedTaskIds: string[], totalCount: number) => void;
+  checklists: Record<string, CellChecklistState>;
+  onUpdateChecklist: (
+    cellId: string,
+    completedTaskIds: string[],
+    naTaskIds: string[],
+    allTaskIds: string[]
+  ) => void;
 }
 
 export const HeatmapMatrix: React.FC<HeatmapMatrixProps> = ({
@@ -229,34 +234,71 @@ export const HeatmapMatrix: React.FC<HeatmapMatrixProps> = ({
     onCellClick(cell);
   };
 
-  // Tareas completadas para la celda actualmente abierta en el popover
-  const currentCompletedTaskIds = useMemo(() => {
-    if (!activePopover) return [];
-    const stored = checklists[activePopover.cell.id];
-    if (stored !== undefined) return stored;
-    // Si la celda está en completed pero no se había registrado array, asumimos todas
-    if (activePopover.cell.status === 'completed') {
-      return activePopover.group.tasks.map((t) => t.id);
+  // Estado de checklist para la celda actualmente abierta en el popover
+  const currentCellState = useMemo(() => {
+    if (!activePopover) return { completed: [], na: [] };
+    const raw = checklists[activePopover.cell.id];
+    if (raw) {
+      return {
+        completed: raw.completed || [],
+        na: raw.na || [],
+      };
     }
-    return [];
+    // Si la celda está en completed pero no se había registrado objeto, asumimos todas completadas
+    if (activePopover.cell.status === 'completed') {
+      return {
+        completed: activePopover.group.tasks.map((t) => t.id),
+        na: [],
+      };
+    }
+    return { completed: [], na: [] };
   }, [activePopover, checklists]);
 
-  // Manejar cambio en un checkbox individual
+  // Manejar cambio en un checkbox individual OK
   const handleToggleTask = (taskId: string) => {
     if (!activePopover) return;
-    const exists = currentCompletedTaskIds.includes(taskId);
-    const next = exists
-      ? currentCompletedTaskIds.filter((id) => id !== taskId)
-      : [...currentCompletedTaskIds, taskId];
+    const allTaskIds = activePopover.group.tasks.map((t) => t.id);
+    const prevCompleted = currentCellState.completed;
+    const prevNA = currentCellState.na;
 
-    onUpdateChecklist(activePopover.cell.id, next, activePopover.group.tasks.length);
+    const exists = prevCompleted.includes(taskId);
+    const nextCompleted = exists
+      ? prevCompleted.filter((id) => id !== taskId)
+      : [...prevCompleted, taskId];
+
+    // Si el usuario marca OK, se retira de NA
+    const nextNA = prevNA.filter((id) => id !== taskId);
+
+    onUpdateChecklist(activePopover.cell.id, nextCompleted, nextNA, allTaskIds);
   };
 
-  // Marcar / Desmarcar todos los checkboxes
+  // Manejar cambio en un checkbox individual NA (No Aplica)
+  const handleToggleNA = (taskId: string) => {
+    if (!activePopover) return;
+    const allTaskIds = activePopover.group.tasks.map((t) => t.id);
+    const prevCompleted = currentCellState.completed;
+    const prevNA = currentCellState.na;
+
+    const exists = prevNA.includes(taskId);
+    const nextNA = exists
+      ? prevNA.filter((id) => id !== taskId)
+      : [...prevNA, taskId];
+
+    // Si el usuario marca NA, se retira de OK (completado)
+    const nextCompleted = prevCompleted.filter((id) => id !== taskId);
+
+    onUpdateChecklist(activePopover.cell.id, nextCompleted, nextNA, allTaskIds);
+  };
+
+  // Marcar / Desmarcar todos los checkboxes aplicables
   const handleToggleAll = (complete: boolean) => {
     if (!activePopover) return;
-    const next = complete ? activePopover.group.tasks.map((t) => t.id) : [];
-    onUpdateChecklist(activePopover.cell.id, next, activePopover.group.tasks.length);
+    const allTaskIds = activePopover.group.tasks.map((t) => t.id);
+    const currentNA = currentCellState.na;
+    const nextCompleted = complete
+      ? allTaskIds.filter((id) => !currentNA.includes(id))
+      : [];
+    onUpdateChecklist(activePopover.cell.id, nextCompleted, currentNA, allTaskIds);
   };
 
   const selectedRowObj = rows.find((r) => r.id === activeSelectedRowId);
@@ -503,9 +545,11 @@ export const HeatmapMatrix: React.FC<HeatmapMatrixProps> = ({
           rowName={activePopover.cell.rowName}
           colName={activePopover.cell.colName}
           group={activePopover.group}
-          completedTaskIds={currentCompletedTaskIds}
+          completedTaskIds={currentCellState.completed}
+          naTaskIds={currentCellState.na}
           cellStatus={activePopover.cell.status}
           onToggleTask={handleToggleTask}
+          onToggleNA={handleToggleNA}
           onToggleAll={handleToggleAll}
           onClose={() => setActivePopover(null)}
           position={activePopover.position}

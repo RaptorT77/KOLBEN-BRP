@@ -1,5 +1,10 @@
 export type ActivityStatus = 'disabled' | 'pending' | 'in_progress' | 'completed';
 
+export interface CellChecklistState {
+  completed: string[];
+  na: string[];
+}
+
 export interface ActivityCell {
   id: string;
   rowId: string;

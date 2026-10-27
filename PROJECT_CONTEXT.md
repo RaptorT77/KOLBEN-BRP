@@ -50,12 +50,12 @@ Este documento contiene la memoria técnica, decisiones de diseño, auditoría d
 6. **Requerimiento de Menú Emergente de Checklist y Ajuste de Columnas PMQ756**:
    - Ajuste de columnas para `PMQ756 3M Cargador`: Únicamente activas las columnas del documento oficial: 10 (LOTO), 20 (Panel de control y potencia), 30 (Neumático), 60 (Guías), 110 (Sensores) y 220 (Banda transportadora). Las demás (150, 180, 190) fueron desactivadas y pasadas a gris.
    - Selección de fila interactiva: Permite seleccionar cualquier equipo (ej. `TRANSPORTADORES` o `PMQ756 3M Cargador`) haciendo clic sobre la fila.
-   - Menú emergente de actividades: Al pasar el cursor sobre cualquier columna activa de la fila seleccionada, se despliega un popover flotante con las actividades exactas del grupo y sus checkboxes interactivos.
-   - Regla de negocio automatizada:
-     - 0 tareas marcadas: La celda se coloca en Rojo (`PEND.`).
-     - 1 a N-1 tareas marcadas: La celda se coloca en Ámbar (`RUN`).
-     - Todas las tareas marcadas: La celda se coloca en Verde (`OK`).
-   - Sincronización en tiempo real de los checkboxes entre todos los dispositivos abiertos.
+
+7. **Requerimiento de Catálogo Completo de 30 Grupos, Numeración Oficial, Checkbox NA y Nombres OP**:
+   - **Nombres Normalizados de Filas**: Se actualizaron las 16 filas con su código de operación (`PMQ1231 3M Gantry OP05`, `PMQ757 3M Kanzaky OP10`, `PMQ758 3M Kanzaky OP20`, ..., `PMQ767 3M Kanzaky OP80`, etc.).
+   - **Catálogo Maestro de 30 Grupos**: Implementación de todos los grupos del 10 al 300 con su numeración oficial (ej. `10.1`, `40.1`, `300.1`) según el documento técnico oficial.
+   - **Casilla Adicional "NA"**: Cada renglón cuenta con una casilla "NA"; al marcarla, ese renglón se ignora del cálculo de estado (no cuenta como pendiente ni como concluido).
+   - **Exclusividad Estricta por Coordenada**: El patrón de checkboxes es único y exclusivo para cada coordenada Fila × Columna (`${rowId}_${colId}`).
 
 ---
 
