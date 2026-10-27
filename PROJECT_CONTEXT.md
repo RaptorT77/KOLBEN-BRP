@@ -57,6 +57,17 @@ Este documento contiene la memoria técnica, decisiones de diseño, auditoría d
    - **Casilla Adicional "NA"**: Cada renglón cuenta con una casilla "NA"; al marcarla, ese renglón se ignora del cálculo de estado (no cuenta como pendiente ni como concluido).
    - **Exclusividad Estricta por Coordenada**: El patrón de checkboxes es único y exclusivo para cada coordenada Fila × Columna (`${rowId}_${colId}`).
 
+8. **Requerimiento de Optimización Móvil Completa, Visibilidad Permanente y Cierre Multi-Dispositivo**:
+   - **Visibilidad 100% Garantizada**: En smartphones, tablets y pantallas táctiles (o al hacer clic en cualquier celda), la ventana emergente se proyecta como un diálogo modal centrado (`showAsModal`) con fondo oscuro semitransparente (`bg-black/60 backdrop-blur-[2px]`). Esto previene desbordamientos o recortes en los bordes de la pantalla.
+   - **Mecanismos Intuitivos de Cierre**: Se puede cerrar la ventana emergente en cualquier dispositivo mediante 4 vías independientes:
+     1. Tocando en cualquier punto fuera de la tarjeta (el backdrop oscuro interactivo actúa como disparador de cierre).
+     2. Botón `X` en la esquina superior derecha de la cabecera (área táctil $\ge 44\times 44\text{px}$).
+     3. Botón de pie de página `Cerrar` con icono y alto contraste (altura táctil $\ge 44\text{px}$).
+     4. Pulsando la tecla `Escape` en teclados físicos o virtuales.
+   - **Zonas Táctiles Ergonómicas**: Checkboxes de OK y NA con dimensiones mínimas de $44\times 44\text{px}$ para manipulación táctil con un solo pulgar sin errores.
+   - **Compatibilidad con Barras del Sistema**: Uso de unidades de altura dinámicas (`88dvh` / `88vh`) y margen inferior seguro (`env(safe-area-inset-bottom)`) para evitar que la barra de inicio de iOS o la barra de navegación de Android tapen los botones de acción.
+   - **Bloqueo de Desplazamiento de Fondo**: Evita movimientos involuntarios o temblores de la matriz mientras el operador desliza la lista de actividades.
+
 ---
 
 ## 3. Auditoría de Datos del PDF (`data/activities.json`)
