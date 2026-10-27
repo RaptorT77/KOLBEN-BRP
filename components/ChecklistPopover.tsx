@@ -103,8 +103,8 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
   const getStatusBadge = () => {
     if (applicableCount === 0) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-black bg-[#22C55E] text-black shadow-xs">
-          OK (Todos NA)
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-bold bg-[#E5E7EB] text-[#4B5563] border border-[#D1D5DB] shadow-xs">
+          Gris (Todos NA)
         </span>
       );
     }
@@ -196,13 +196,15 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
             <div
               className={cn(
                 'h-full transition-all duration-300',
-                allCompleted || applicableCount === 0
+                applicableCount === 0
+                  ? 'bg-slate-400'
+                  : allCompleted
                   ? 'bg-green-500'
                   : noneCompleted
                   ? 'bg-red-400'
                   : 'bg-amber-500'
               )}
-              style={{ width: `${progressPercent}%` }}
+              style={{ width: `${applicableCount === 0 ? 100 : progressPercent}%` }}
             />
           </div>
         </div>

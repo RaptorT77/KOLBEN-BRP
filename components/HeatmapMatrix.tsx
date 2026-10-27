@@ -107,10 +107,30 @@ export const HeatmapMatrix: React.FC<HeatmapMatrixProps> = ({
   };
 
   const getCellStyles = (cell: ActivityCell | undefined, isSelected: boolean, isRowSelected: boolean) => {
-    if (!cell || !cell.isEditable || cell.status === 'disabled') {
+    if (!cell) {
+      return {
+        container: 'bg-[#E5E7EB] border-[#D1D5DB] text-[#6B7280]',
+        text: 'text-[#6B7280]',
+      };
+    }
+
+    // Celdas deshabilitadas estructuralmente del PDF (nunca editables)
+    if (!cell.isEditable || cell.initialStatus === 'disabled') {
       return {
         container: 'bg-[#E5E7EB] border-[#D1D5DB] cursor-not-allowed text-[#6B7280]',
         text: 'text-[#6B7280]',
+      };
+    }
+
+    // Celda editable pero con todas las tareas marcadas como NA -> Color Gris
+    if (cell.status === 'disabled') {
+      return {
+        container: cn(
+          'bg-[#E5E7EB] border-[#D1D5DB] text-[#4B5563] cursor-pointer active:scale-95 transition-all duration-75',
+          isRowSelected && 'hover:brightness-105 hover:ring-1 hover:ring-blue-400',
+          isSelected && 'ring-2 ring-corporate-accent z-10 scale-[1.02] shadow-sm'
+        ),
+        text: 'text-[#4B5563] font-black',
       };
     }
 
@@ -142,7 +162,7 @@ export const HeatmapMatrix: React.FC<HeatmapMatrixProps> = ({
     };
   };
 
-  // Manejo del cursor sobre una celda activa de la fila seleccionada
+  // Manejo del cursor sobre una celda activa (solo para inspector de pie, NO abre popover)
   const handleCellMouseEnter = (
     cell: ActivityCell | undefined,
     col: DiagramColumn,
@@ -150,43 +170,10 @@ export const HeatmapMatrix: React.FC<HeatmapMatrixProps> = ({
   ) => {
     if (!cell) return;
     setHoveredCell(cell);
-
-    // Si la celda es editable y pertenece a la fila seleccionada con el mouse
-    if (activeSelectedRowId === cell.rowId && cell.isEditable) {
-      if (popoverTimeoutRef.current) {
-        clearTimeout(popoverTimeoutRef.current);
-        popoverTimeoutRef.current = null;
-      }
-
-      const group = getChecklistForCell(cell.rowId, col.code, col.name);
-      if (group && group.tasks.length > 0) {
-        const rect = e.currentTarget.getBoundingClientRect();
-        setActivePopover((prev) => {
-          // Si ya estaba anclado a esta misma celda, mantener estado
-          if (prev?.pinned && prev.cell.id === cell.id) {
-            return prev;
-          }
-          return {
-            cell,
-            group,
-            position: {
-              top: rect.bottom + 6,
-              left: Math.max(20, Math.min(rect.left - 60, window.innerWidth - 460)),
-            },
-            pinned: false,
-          };
-        });
-      }
-    }
   };
 
   const handleCellMouseLeave = () => {
     setHoveredCell(null);
-    if (activePopover && !activePopover.pinned) {
-      popoverTimeoutRef.current = setTimeout(() => {
-        setActivePopover(null);
-      }, 350);
-    }
   };
 
   const handlePopoverMouseEnter = () => {
@@ -197,20 +184,19 @@ export const HeatmapMatrix: React.FC<HeatmapMatrixProps> = ({
   };
 
   const handlePopoverMouseLeave = () => {
-    if (activePopover && !activePopover.pinned) {
-      popoverTimeoutRef.current = setTimeout(() => {
-        setActivePopover(null);
-      }, 350);
-    }
+    // Popover solo se cierra al interactuar explícitamente con cerrar o fondo
   };
 
-  // Clic en una celda (fija el menú emergente para interactuar cómodamente)
+  // Clic en una celda: el menú emergente debe aparecer SI Y SOLO SI se da clic en una casilla válida
   const handleCellClickInternal = (
     cell: ActivityCell,
     col: DiagramColumn,
     e: React.MouseEvent<HTMLTableCellElement>
   ) => {
-    if (!cell.isEditable) return;
+    // Si la celda no es válida (deshabilitada según el PDF), NO abrir menú
+    if (!cell.isEditable || cell.initialStatus === 'disabled') {
+      return;
+    }
 
     // Si la fila no estaba seleccionada, seleccionarla al hacer clic
     if (activeSelectedRowId !== cell.rowId) {
@@ -443,16 +429,18 @@ export const HeatmapMatrix: React.FC<HeatmapMatrixProps> = ({
                             isPopoverTarget && 'ring-2 ring-white scale-[1.03] z-20 shadow-md'
                           )}
                         >
-                          {cell?.isEditable ? (
+                          {cell?.isEditable && cell.initialStatus !== 'disabled' ? (
                             <div className="w-full h-full flex items-center justify-center px-0.5 min-h-[28px] sm:min-h-[32px]">
-                              {/* Texto Horizontal con fuente negrita y color negro */}
+                              {/* Texto Horizontal con fuente negrita */}
                               <span
                                 className={cn(
-                                  'text-[9px] sm:text-[10px] font-black text-black tracking-tight leading-none block truncate',
-                                  styles.text
+                                  'text-[9px] sm:text-[10px] tracking-tight leading-none block truncate',
+                                  cell.status === 'disabled'
+                                    ? 'text-[#4B5563] font-black'
+                                    : 'text-black font-black'
                                 )}
                               >
-                                {getStatusLabel(cell.status)}
+                                {cell.status === 'disabled' ? 'NA' : getStatusLabel(cell.status)}
                               </span>
                             </div>
                           ) : (

@@ -40,12 +40,12 @@ export function useDiagramStore() {
     if (!statuses || typeof statuses !== 'object') return;
     setCells((prev) =>
       prev.map((cell) => {
-        // Guard disabled cells - they must NEVER become active
+        // Guard structurally disabled cells - they must NEVER become active
         if (!cell.isEditable || cell.initialStatus === 'disabled') {
           return { ...cell, status: 'disabled' };
         }
         const newStatus = statuses[cell.id];
-        if (newStatus && ['pending', 'in_progress', 'completed'].includes(newStatus)) {
+        if (newStatus && ['pending', 'in_progress', 'completed', 'disabled'].includes(newStatus)) {
           return { ...cell, status: newStatus };
         }
         // If not in statuses, keep initialStatus
@@ -56,7 +56,7 @@ export function useDiagramStore() {
 
   // Helper to apply a single cell update from remote broadcast
   const applySingleRemoteUpdate = useCallback((cellId: string, newStatus: ActivityStatus) => {
-    if (!['pending', 'in_progress', 'completed'].includes(newStatus)) return;
+    if (!['pending', 'in_progress', 'completed', 'disabled'].includes(newStatus)) return;
     setCells((prev) =>
       prev.map((cell) => {
         if (cell.id === cellId && cell.isEditable && cell.initialStatus !== 'disabled') {
@@ -89,7 +89,7 @@ export function useDiagramStore() {
                 return { ...cell, status: 'disabled' };
               }
               const st = parsed[cell.id];
-              if (st && ['pending', 'in_progress', 'completed'].includes(st)) {
+              if (st && ['pending', 'in_progress', 'completed', 'disabled'].includes(st)) {
                 return { ...cell, status: st };
               }
               return cell;
@@ -235,7 +235,7 @@ export function useDiagramStore() {
 
   // Update cell status with optimistic local update + instantaneous broadcast + cloud persistence
   const updateCellStatus = useCallback((cellId: string, newStatus: ActivityStatus) => {
-    if (!['pending', 'in_progress', 'completed'].includes(newStatus)) {
+    if (!['pending', 'in_progress', 'completed', 'disabled'].includes(newStatus)) {
       return;
     }
 
@@ -398,8 +398,8 @@ export function useDiagramStore() {
       let newStatus: ActivityStatus = 'pending';
 
       if (applicableCount === 0) {
-        // Si todas las casillas son NA, el renglón no tiene pendientes
-        newStatus = 'completed';
+        // Si todas las tareas están chequeadas como NA, entonces el color de estado debe ser Gris
+        newStatus = 'disabled';
       } else if (completedApplicableCount === 0) {
         // 0 tareas aplicables realizadas -> Rojo (PEND.)
         newStatus = 'pending';

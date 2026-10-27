@@ -258,13 +258,23 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                       </td>
                       {columns.map((col) => {
                         const cell = cellMap.get(`${row.id}_${col.id}`);
-                        if (!cell || !cell.isEditable || cell.status === 'disabled') {
+                        if (!cell || !cell.isEditable || cell.initialStatus === 'disabled') {
                           return (
                             <td
                               key={col.id}
                               className="p-0 border-r border-slate-200 bg-[#E5E7EB] text-center text-[#6B7280] font-bold text-[8px]"
                             >
                               —
+                            </td>
+                          );
+                        }
+                        if (cell.status === 'disabled') {
+                          return (
+                            <td
+                              key={col.id}
+                              className="p-0 border-r border-slate-200 bg-[#E5E7EB] text-center text-[#4B5563] font-bold text-[8px]"
+                            >
+                              NA
                             </td>
                           );
                         }
@@ -314,7 +324,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                 const activeCellsForRow = columns
                   .map((col) => {
                     const cell = cellMap.get(`${row.id}_${col.id}`);
-                    if (!cell || !cell.isEditable || cell.status === 'disabled') return null;
+                    if (!cell || !cell.isEditable || cell.initialStatus === 'disabled') return null;
                     const group = getChecklistForCell(row.id, col.code, col.name);
                     if (!group) return null;
                     const cellState = checklists[cell.id] || { completed: [], na: [] };
@@ -355,11 +365,16 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({
                         const completedCount = applicableTasks.filter((t) => completedIds.includes(t.id)).length;
                         const naCount = naIds.length;
 
+                        const isAllNA = applicableCount === 0;
                         const isOK = cell.status === 'completed';
                         const isRUN = cell.status === 'in_progress';
-                        const statusBadge = isOK ? (
+                        const statusBadge = isAllNA ? (
+                          <span className="px-2 py-0.5 rounded text-[9.5px] font-bold bg-[#E5E7EB] text-[#4B5563] border border-[#D1D5DB]">
+                            NA (Todos NA)
+                          </span>
+                        ) : isOK ? (
                           <span className="px-2 py-0.5 rounded text-[9.5px] font-black bg-[#22C55E] text-black">
-                            OK {applicableCount === 0 && '(Todos NA)'}
+                            OK ({completedCount}/{applicableCount})
                           </span>
                         ) : isRUN ? (
                           <span className="px-2 py-0.5 rounded text-[9.5px] font-black bg-[#F59E0B] text-black">

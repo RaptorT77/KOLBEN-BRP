@@ -609,14 +609,20 @@
         <tr>
           <td><span class="badge-preview badge-ok">OK</span></td>
           <td><strong>Concluido</strong> (Verde #22C55E)</td>
-          <td>El 100% de tareas aplicables están marcadas OK (o todas son NA).</td>
+          <td>El 100% de tareas aplicables están marcadas OK.</td>
           <td>Actividad completada y validada en el turno.</td>
+        </tr>
+        <tr>
+          <td><span class="badge-preview badge-dis" style="color: #4B5563; font-weight: 900;">NA</span></td>
+          <td><strong>No Aplica (Todas NA)</strong> (Gris #E5E7EB)</td>
+          <td>Todas las tareas del grupo marcadas como NA (casilla editable).</td>
+          <td>La casilla se torna gris y se ignora del cálculo de pendientes.</td>
         </tr>
         <tr>
           <td><span class="badge-preview badge-dis">&mdash;</span></td>
           <td><strong>Deshabilitado</strong> (Gris #E5E7EB)</td>
           <td>Intersección no aplicable para ese equipo según el PDF oficial.</td>
-          <td>Bloqueada por diseño; no requiere acción.</td>
+          <td>Bloqueada por diseño estructural; no requiere acción.</td>
         </tr>
       </tbody>
     </table>
@@ -798,7 +804,7 @@
     <div class="faq-item">
       <div class="faq-q">¿Qué sucede si marco todas las tareas de un grupo como NA (No Aplica)?</div>
       <div class="faq-a">
-        El sistema detecta automáticamente que el equipo tiene 0 tareas obligatorias pendientes, por lo que la celda pasa al estado <strong>OK (Verde)</strong> con la indicación interna <em>OK (Todos NA)</em>.
+        Si todas las tareas de un grupo están marcadas como NA, esa casilla se evalúa como no aplicable para ese equipo y su estado se torna en <strong>Gris (NA, #E5E7EB)</strong>. Esa casilla permanece editable y activa (puedes volver a abrir su checklist haciendo clic si deseas cambiarla), pero se excluye de las tareas obligatorias pendientes.
       </div>
     </div>
 

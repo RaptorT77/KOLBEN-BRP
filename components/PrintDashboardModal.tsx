@@ -235,13 +235,23 @@ export const PrintDashboardModal: React.FC<PrintDashboardModalProps> = ({
                     </td>
                     {columns.map((col) => {
                       const cell = cellMap.get(`${row.id}_${col.id}`);
-                      if (!cell || !cell.isEditable || cell.status === 'disabled') {
+                      if (!cell || !cell.isEditable || cell.initialStatus === 'disabled') {
                         return (
                           <td
                             key={col.id}
                             className="p-0 border-r border-slate-200 bg-[#E5E7EB] text-center text-[#6B7280] font-bold text-[7.5px]"
                           >
                             —
+                          </td>
+                        );
+                      }
+                      if (cell.status === 'disabled') {
+                        return (
+                          <td
+                            key={col.id}
+                            className="p-0 border-r border-slate-200 bg-[#E5E7EB] text-center text-[#4B5563] font-bold text-[7.5px]"
+                          >
+                            NA
                           </td>
                         );
                       }

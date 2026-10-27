@@ -49,16 +49,17 @@ Este archivo proporciona el contexto completo y las reglas operativas obligatori
 
 ### Selección de Fila y Menú Emergente Interactivo
 - **Selección de Fila**: Se puede seleccionar cualquier fila con el mouse haciendo clic sobre el nombre del equipo en la columna fija de la izquierda (ej. `TRANSPORTADORES`, `PMQ759 3M Kanzaky OP30`, etc.). La fila activa se resalta visiblemente.
-- **Menú Emergente (Checklist Oficial)**: Al posicionar el cursor sobre cualquier columna activa de la fila seleccionada (ej. `10: LOTO`), se despliega un menú flotante con las actividades específicas de esa columna extraídas del catálogo oficial de 30 grupos.
+- **Menú Emergente (Checklist Oficial)**: El menú emergente aparece **si y solo si** se hace clic sobre alguna casilla válida (activa y editable). En casillas deshabilitadas estructuralmente no se abre ningún menú. Al posicionar el cursor sobre una celda solo se resalta en el inspector del pie.
 - **Exclusividad por Coordenada (Fila × Columna)**:
   - Cada celda (`${rowId}_${colId}`) mantiene su propio estado de checkboxes de forma totalmente independiente. Por ejemplo, `TRANSPORTADORES × 10 LOTO` tiene un registro único de casillas marcadas que no altera ni comparte con `PMQ759 3M Kanzaky OP30 × 10 LOTO`.
 - **Casilla adicional "NA" (No Aplica)**:
   - Cada actividad cuenta con una casilla adicional denominada **NA**.
-  - Al marcar **NA**, ese renglón se excluye del cálculo de estado de la celda (no se toma en cuenta en el conteo de tareas pendientes ni completadas).
+  - Al marcar **NA**, esa tarea se excluye y es ignorada en la evaluación de color como si no existiera.
 - **Regla Estricta de Transición de Estados por Checkbox**:
   - **0 casillas aplicables marcadas**: Estado en Rojo (`PEND.`, `#EF4444`, texto negro).
   - **1 a N-1 casillas aplicables marcadas**: Estado en Ámbar (`RUN`, `#F59E0B`, texto negro).
-  - **Todas las casillas aplicables marcadas** (o todas marcadas como NA): Estado en Verde (`OK`, `#22C55E`, texto negro).
+  - **Todas las casillas aplicables marcadas**: Estado en Verde (`OK`, `#22C55E`, texto negro).
+  - **Todas las casillas marcadas como NA**: Estado en Gris (`NA`, `#E5E7EB`, texto `#4B5563`, casilla editable activa).
 - **Acciones Rápidas**: Botones de "Marcar Todos (OK)" y "Desmarcar (PEND.)".
 - **Sincronización en Tiempo Real**: Los estados de checkboxes (OK y NA) y de celdas se sincronizan instantáneamente en `localStorage` y en tiempo real con Supabase Realtime (`checklist_updated` / `cell_updated`).
 
@@ -66,8 +67,9 @@ Este archivo proporciona el contexto completo y las reglas operativas obligatori
 | :--- | :---: | :---: | :---: | :--- |
 | **Pendiente** | `PEND.` | Rojo (`#EF4444` / Tailwind `bg-red-500`) | Negro (`#000000`, `font-black`) | Actividad por realizar (0 tareas marcadas) |
 | **En Proceso** | `RUN` | Ámbar (`#F59E0B` / Tailwind `bg-amber-500`) | Negro (`#000000`, `font-black`) | Actividad en ejecución (1 a N-1 tareas marcadas) |
-| **Concluido** | `OK` | Verde (`#22C55E` / Tailwind `bg-green-500`) | Negro (`#000000`, `font-black`) | Actividad concluida (todas las tareas marcadas) |
-| **Deshabilitada** | `—` | Gris (`#E5E7EB` / Tailwind `bg-gray-200`) | Gris Oscuro (`#4B5563`, `font-bold`) | Intersección no aplicable según el plan técnico |
+| **Concluido** | `OK` | Verde (`#22C55E` / Tailwind `bg-green-500`) | Negro (`#000000`, `font-black`) | Actividad concluida (todas las tareas aplicables marcadas) |
+| **No Aplica (Todas NA)** | `NA` | Gris (`#E5E7EB` / Tailwind `bg-gray-200`) | Gris Oscuro (`#4B5563`, `font-bold`) | Todas las tareas marcadas como NA (casilla editable) |
+| **Deshabilitada** | `—` | Gris (`#E5E7EB` / Tailwind `bg-gray-200`) | Gris Tenue (`#6B7280`, `font-bold`) | Intersección no aplicable según el plan técnico del PDF |
 
 ---
 
