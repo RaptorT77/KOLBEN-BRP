@@ -41,17 +41,31 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
   onMouseEnter,
   onMouseLeave,
 }) => {
-  const [isMobileScreen, setIsMobileScreen] = useState(false);
+  const [isMobileOrTouch, setIsMobileOrTouch] = useState(false);
 
-  // Detección de ancho de pantalla para comportamiento móvil/tablet
+  // Detección reactiva de pantalla móvil, tablet o dispositivo táctil
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobileScreen(window.innerWidth < 768);
+    const checkMobile = () => {
+      const isTouch =
+        typeof window !== 'undefined' &&
+        ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+      const isNarrow = typeof window !== 'undefined' && window.innerWidth < 1024;
+      setIsMobileOrTouch(isTouch || isNarrow);
     };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Bloquear desplazamiento del fondo en móviles cuando la ventana modal está abierta
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen]);
 
   // Cierre con la tecla Escape
   useEffect(() => {
@@ -115,8 +129,9 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
     );
   };
 
-  // En móviles, tablets o cuando está anclado (pinned), se muestra como modal centrado con backdrop
-  const showAsModal = isMobileScreen || isPinned;
+  // En móviles, tablets, pantallas táctiles o cuando está anclado (pinned),
+  // se muestra como modal centrado con backdrop completo para garantizar máxima visibilidad
+  const showAsModal = isMobileOrTouch || isPinned;
 
   // Contenido interno de la tarjeta emergente
   const popoverContent = (
@@ -124,13 +139,16 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       className={cn(
-        'w-full max-w-[560px] bg-white rounded-xl sm:rounded-2xl shadow-2xl border-2 border-corporate-primary/40 flex flex-col overflow-hidden select-none text-corporate-text animate-in fade-in zoom-in-95 duration-150',
-        showAsModal ? 'max-h-[92vh] sm:max-h-[86vh]' : 'max-h-[500px]'
+        'w-full max-w-[560px] bg-white rounded-2xl shadow-2xl border-2 border-[#1F4E79]/50 flex flex-col overflow-hidden select-none text-corporate-text animate-in fade-in zoom-in-95 duration-150',
+        showAsModal ? 'max-h-[88dvh] max-h-[88vh]' : 'max-h-[500px]'
       )}
       role="dialog"
       aria-modal={showAsModal}
       aria-label={`Checklist ${group.groupName}`}
     >
+      {/* Píldora visual para dispositivos móviles */}
+      <div className="w-12 h-1 bg-white/40 rounded-full mx-auto my-1 sm:hidden flex-shrink-0" />
+
       {/* Cabecera ejecutiva fija (Sticky) */}
       <div className="bg-gradient-to-r from-[#173D60] to-[#1F4E79] text-white p-3 sm:p-4 flex items-start justify-between gap-3 border-b border-[#2C6191] flex-shrink-0">
         <div className="space-y-1 min-w-0 flex-1">
@@ -151,13 +169,13 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
           </p>
         </div>
 
-        {/* Botón de cierre en cabecera optimizado para toque táctil (mínimo 44x44px de área táctil) */}
+        {/* Botón de cierre en cabecera optimizado para toque táctil (área táctil >= 44x44px) */}
         <button
           onClick={onClose}
           type="button"
           aria-label="Cerrar ventana emergente"
-          className="text-white bg-white/10 hover:bg-white/20 active:bg-white/30 p-2 sm:p-2.5 rounded-xl transition-all flex items-center justify-center flex-shrink-0 touch-manipulation shadow-xs"
-          title="Cerrar ventana (Esc)"
+          className="text-white bg-white/10 hover:bg-white/20 active:bg-white/30 min-w-[44px] min-h-[44px] rounded-xl transition-all flex items-center justify-center flex-shrink-0 touch-manipulation shadow-xs cursor-pointer"
+          title="Cerrar ventana (Esc o tocar fondo)"
         >
           <X className="w-5 h-5 stroke-[2.5]" />
         </button>
@@ -191,15 +209,15 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
       </div>
 
       {/* Encabezado de columnas de la lista (Sticky) */}
-      <div className="bg-slate-100 border-b border-slate-200 px-3 py-1.5 text-[10px] font-bold text-slate-600 flex items-center gap-2 flex-shrink-0">
-        <div className="w-12 text-center flex-shrink-0">OK</div>
-        <div className="w-12 text-center flex-shrink-0">NA</div>
-        <div className="w-12 text-center flex-shrink-0">ITEM</div>
+      <div className="bg-slate-100 border-b border-slate-200 px-2.5 sm:px-3 py-1.5 text-[10px] font-bold text-slate-600 flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        <div className="w-10 sm:w-12 text-center flex-shrink-0">OK</div>
+        <div className="w-10 sm:w-12 text-center flex-shrink-0">NA</div>
+        <div className="w-10 sm:w-12 text-center flex-shrink-0">ITEM</div>
         <div className="flex-1 min-w-0">ACTIVIDAD / VERIFICACIÓN</div>
         <div className="w-12 text-center flex-shrink-0 hidden xs:block">ESTADO</div>
       </div>
 
-      {/* Lista desplazable de actividades con áreas táctiles amplias (min-h-[44px]) */}
+      {/* Lista desplazable de actividades con áreas táctiles amplias (min-h-[48px]) */}
       <div className="flex-1 overflow-y-auto overscroll-contain divide-y divide-slate-100 p-1 touch-pan-y">
         {allTasks.map((task) => {
           const isNA = naTaskIds.includes(task.id);
@@ -209,7 +227,7 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
             <div
               key={task.id}
               className={cn(
-                'p-2 sm:p-2.5 flex items-center gap-2 rounded-lg transition-colors text-xs leading-snug min-h-[48px]',
+                'p-1.5 sm:p-2.5 flex items-center gap-1.5 sm:gap-2 rounded-lg transition-colors text-xs leading-snug min-h-[48px]',
                 isNA
                   ? 'bg-slate-100/80 text-slate-500'
                   : isOK
@@ -217,13 +235,13 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
                   : 'hover:bg-slate-50 active:bg-slate-100 text-slate-700'
               )}
             >
-              {/* Checkbox OK (Realizado) con área táctil cómoda de 44x44px */}
+              {/* Checkbox OK (Realizado) con área táctil cómoda >= 44x44px */}
               <button
                 type="button"
                 onClick={() => onToggleTask(task.id)}
                 disabled={isNA}
-                aria-label={`Marcar como realizada tarea ${task.itemNumber}`}
-                className="w-12 min-h-[44px] flex items-center justify-center flex-shrink-0 touch-manipulation"
+                aria-label={`Marcar tarea ${task.itemNumber} como realizada`}
+                className="w-10 sm:w-12 min-h-[44px] flex items-center justify-center flex-shrink-0 touch-manipulation cursor-pointer disabled:cursor-not-allowed"
               >
                 {isOK ? (
                   <div className="w-5 h-5 rounded-md bg-[#22C55E] text-white flex items-center justify-center shadow-xs">
@@ -234,26 +252,26 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
                     className={cn(
                       'w-5 h-5 rounded-md border-2 bg-white transition-colors',
                       isNA
-                        ? 'border-slate-200 opacity-40 cursor-not-allowed'
-                        : 'border-slate-300 hover:border-green-500'
+                        ? 'border-slate-200 opacity-40'
+                        : 'border-slate-300 hover:border-green-500 active:border-green-600'
                     )}
                   />
                 )}
               </button>
 
-              {/* Checkbox NA (No Aplica) con área táctil cómoda de 44x44px */}
+              {/* Checkbox NA (No Aplica) con área táctil cómoda >= 44x44px */}
               <button
                 type="button"
                 onClick={() => onToggleNA(task.id)}
-                aria-label={`Marcar como No Aplica tarea ${task.itemNumber}`}
-                className="w-12 min-h-[44px] flex items-center justify-center flex-shrink-0 touch-manipulation"
+                aria-label={`Marcar tarea ${task.itemNumber} como No Aplica`}
+                className="w-10 sm:w-12 min-h-[44px] flex items-center justify-center flex-shrink-0 touch-manipulation cursor-pointer"
               >
                 <div
                   className={cn(
                     'px-2 py-1 rounded-md text-[10px] font-black border transition-all text-center min-w-[34px]',
                     isNA
                       ? 'bg-slate-800 text-white border-slate-900 shadow-xs scale-105'
-                      : 'bg-white text-slate-600 border-slate-300 hover:border-slate-500 hover:bg-slate-100'
+                      : 'bg-white text-slate-600 border-slate-300 hover:border-slate-500 hover:bg-slate-100 active:bg-slate-200'
                   )}
                 >
                   NA
@@ -261,7 +279,7 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
               </button>
 
               {/* Número oficial de ítem (ej. 10.1, 40.3, 300.1) */}
-              <span className="w-12 text-center font-mono text-[11px] text-slate-500 font-bold flex-shrink-0">
+              <span className="w-10 sm:w-12 text-center font-mono text-[11px] text-slate-500 font-bold flex-shrink-0">
                 {task.itemNumber}
               </span>
 
@@ -271,7 +289,7 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
                   if (!isNA) onToggleTask(task.id);
                 }}
                 className={cn(
-                  'flex-1 min-w-0 select-text cursor-pointer py-1',
+                  'flex-1 min-w-0 select-text cursor-pointer py-1.5 touch-manipulation',
                   isNA && 'line-through text-slate-400'
                 )}
               >
@@ -301,12 +319,12 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
       </div>
 
       {/* Pie del menú con botones de acción y botón de cierre SIEMPRE visible */}
-      <div className="bg-slate-50 border-t border-corporate-border p-2.5 sm:p-3 flex items-center justify-between gap-2 text-xs flex-shrink-0">
+      <div className="bg-slate-50 border-t border-corporate-border p-2.5 sm:p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 text-xs flex-shrink-0">
         <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => onToggleAll(true)}
-            className="px-2.5 sm:px-3 py-1.5 min-h-[38px] text-[11px] font-bold text-green-800 bg-green-100 hover:bg-green-200 active:bg-green-300 rounded-lg border border-green-300 transition-colors flex items-center gap-1 touch-manipulation"
+            className="px-2.5 sm:px-3 py-1.5 min-h-[44px] text-[11px] font-bold text-green-800 bg-green-100 hover:bg-green-200 active:bg-green-300 rounded-lg border border-green-300 transition-colors flex items-center gap-1 touch-manipulation cursor-pointer"
           >
             <CheckSquare className="w-3.5 h-3.5" />
             <span className="hidden xs:inline">Marcar</span> OK
@@ -314,20 +332,20 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
           <button
             type="button"
             onClick={() => onToggleAll(false)}
-            className="px-2.5 sm:px-3 py-1.5 min-h-[38px] text-[11px] font-bold text-red-800 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded-lg border border-red-300 transition-colors flex items-center gap-1 touch-manipulation"
+            className="px-2.5 sm:px-3 py-1.5 min-h-[44px] text-[11px] font-bold text-red-800 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded-lg border border-red-300 transition-colors flex items-center gap-1 touch-manipulation cursor-pointer"
           >
             <Square className="w-3.5 h-3.5" />
             <span className="hidden xs:inline">Desmarcar</span>
           </button>
         </div>
 
-        {/* Botón principal de Cerrar visible y cómodo en cualquier teléfono, tablet o PC */}
+        {/* Botón principal de Cerrar visible, táctil y accesible en todos los dispositivos */}
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-1.5 min-h-[38px] text-[11px] sm:text-xs font-bold text-slate-800 hover:text-slate-950 bg-white border-2 border-slate-300 hover:border-slate-400 active:bg-slate-100 rounded-lg transition-all shadow-xs flex items-center gap-1 touch-manipulation"
+          className="px-4 py-1.5 min-h-[44px] text-[11px] sm:text-xs font-bold text-slate-900 hover:text-black bg-white hover:bg-slate-50 active:bg-slate-100 border-2 border-slate-300 hover:border-slate-400 active:border-slate-500 rounded-lg transition-all shadow-xs flex items-center gap-1.5 touch-manipulation cursor-pointer"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-4 h-4 stroke-[2.5]" />
           <span>Cerrar</span>
         </button>
       </div>
@@ -335,29 +353,30 @@ export const ChecklistPopover: React.FC<ChecklistPopoverProps> = ({
   );
 
   // Renderizado condicional:
-  // 1. En móviles/tablets o modo anclado: Modal centrado con fondo oscuro semitransparente (Backdrop) que se cierra al tocar fuera
+  // 1. En móviles, tablets, pantallas táctiles o anclado: Modal centrado con fondo oscuro semitransparente (Backdrop)
   if (showAsModal) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-[2px] animate-in fade-in duration-100 overscroll-contain">
-        {/* Fondo oscuro para cerrar al tocar fuera */}
-        <div
-          className="absolute inset-0"
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 overscroll-contain">
+        {/* Fondo oscuro interactivo: tocar en cualquier parte fuera de la tarjeta cierra la ventana */}
+        <button
+          type="button"
           onClick={onClose}
-          aria-hidden="true"
+          aria-label="Cerrar ventana tocando fondo"
+          className="fixed inset-0 w-full h-full bg-black/60 backdrop-blur-[2px] cursor-pointer touch-manipulation border-0 p-0 m-0 z-0"
         />
         {/* Tarjeta modal centrada */}
-        <div className="relative z-10 w-full flex justify-center">
+        <div className="relative z-10 w-full max-w-[560px] flex justify-center">
           {popoverContent}
         </div>
       </div>
     );
   }
 
-  // 2. En Desktop no anclado (hover libre con mouse): Posicionado cerca de la celda pero asegurando visibilidad
+  // 2. En Desktop con mouse no anclado (hover libre): Posicionado cerca de la celda garantizando visibilidad dentro de la pantalla
   const desktopStyle: React.CSSProperties = position
     ? {
         position: 'fixed',
-        top: `${Math.min(Math.max(position.top, 50), typeof window !== 'undefined' ? window.innerHeight - 500 : 50)}px`,
+        top: `${Math.min(Math.max(position.top, 50), typeof window !== 'undefined' ? window.innerHeight - 520 : 50)}px`,
         left: `${Math.min(Math.max(position.left, 20), typeof window !== 'undefined' ? window.innerWidth - 580 : 20)}px`,
         zIndex: 50,
       }
