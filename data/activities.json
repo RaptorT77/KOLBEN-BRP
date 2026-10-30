@@ -2868,9 +2868,9 @@
       "colId": "col_230",
       "colCode": 230,
       "colName": "230: LUBRICACION CENTRAL",
-      "initialStatus": "disabled",
-      "status": "disabled",
-      "isEditable": false
+      "initialStatus": "pending",
+      "status": "pending",
+      "isEditable": true
     },
     {
       "id": "row_8_col_240",
