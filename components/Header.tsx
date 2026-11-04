@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { DiagramSummary, DiagramRow } from '@/types/diagram';
 import { SyncStatus } from '@/lib/useDiagramStore';
-import { RotateCcw, ZoomIn, ZoomOut, Maximize2, AlertTriangle, Layers, Filter, Radio, FileText, Printer, LayoutGrid } from 'lucide-react';
+import { RotateCcw, ZoomIn, ZoomOut, Maximize2, AlertTriangle, Layers, Filter, Radio, FileText, Printer, LayoutGrid, Activity } from 'lucide-react';
 
 interface HeaderProps {
   summary: DiagramSummary;
@@ -110,8 +110,17 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Esquina Superior Derecha: LOGO_JIFIX_BRP-1.jpg */}
-          <div className="flex items-center justify-end flex-shrink-0">
+          {/* Esquina Superior Derecha: Botón Análisis de Soluble + LOGO_JIFIX_BRP-1.jpg */}
+          <div className="flex items-center justify-end gap-2 sm:gap-3 flex-shrink-0">
+            <a
+              href={`${basePath}/analisis-soluble/`}
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10.5px] sm:text-xs font-bold text-white bg-[#173D60] hover:bg-[#1E4E7A] active:bg-[#0F2942] border border-[#173D60]/40 shadow-xs hover:shadow transition-all duration-150 whitespace-nowrap cursor-pointer tracking-tight"
+              title="Ir a Análisis de Soluble Linea E"
+            >
+              <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-300" />
+              <span>Análisis de Soluble Linea E</span>
+            </a>
+
             <div className="p-0.5 rounded-lg border border-slate-200/80 bg-white shadow-xs">
               <img
                 src={`${basePath}/LOGO_JIFIX_BRP-1.jpg`}

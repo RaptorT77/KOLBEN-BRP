@@ -1,0 +1,875 @@
+/* ==========================================================================
+   LAYOUT LINEA "E" / BRP — SISTEMA DE MONITOREO DE SOLUBLE
+   Estilo Industrial HMI de Alta Fidelidad
+   ========================================================================== */
+
+:root {
+  --color-bg: #f3f4f6;
+  --color-canvas-bg: #ffffff;
+  --color-border-dark: #000000;
+  --color-border-soft: #cbd5e1;
+  --color-text-main: #0f172a;
+  --color-text-muted: #64748b;
+  
+  /* Paleta Industrial de Estados */
+  --industrial-blue: #3474b4;
+  --industrial-blue-border: #1a4971;
+  --industrial-tank-yellow: #f59e0b;
+  --industrial-tank-border: #b45309;
+  --industrial-disabled-red: #dc2626;
+  --industrial-disabled-border: #991b1b;
+  --industrial-ok-green: #00a859;
+  --industrial-ok-border: #047857;
+  --industrial-offline-grey: #9ca3af;
+  --industrial-offline-border: #4b5563;
+  --industrial-network-pink: #e08c8c;
+  --industrial-network-border: #c57272;
+  --industrial-dashed-blue: #003366;
+  
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Barra de Navegación Superior / Header Web */
+.top-nav-bar {
+  width: 100%;
+  max-width: 1320px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-back {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+.btn-back:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.btn-csv {
+  background: #047857;
+  color: #ffffff;
+  border-color: #065f46;
+}
+
+.btn-csv:hover {
+  background: #065f46;
+}
+
+.btn-telegram {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0369a1;
+}
+
+.btn-telegram:hover {
+  background: #0369a1;
+}
+
+/* Contenedor Principal del Diagrama — Fidelidad con la Imagen */
+.canvas-frame {
+  position: relative;
+  width: 100%;
+  max-width: 1320px;
+  background-color: var(--color-canvas-bg);
+  border: 2px solid var(--color-border-dark);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 16px 20px 20px 32px;
+  overflow-x: auto;
+}
+
+/* Marca de Agua / Texto Vertical Izquierdo */
+.watermark-left {
+  position: absolute;
+  left: 6px;
+  bottom: 24px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+  letter-spacing: 1.5px;
+  pointer-events: none;
+  user-select: none;
+  text-transform: uppercase;
+}
+
+/* Encabezado Oficial del Diagrama */
+.diagram-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+}
+
+.header-logo-left img {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+}
+
+.header-title-container {
+  text-align: center;
+  flex: 1;
+}
+
+.header-title {
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #000000;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.header-logo-right img {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Contenido Principal en 2 Bloques (Gráficas Arriba y Layout Abajo) */
+.diagram-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 1120px;
+}
+
+/* SECCIÓN SUPERIOR: 3 GRÁFICAS Y ÁREA DERECHA */
+.upper-section {
+  display: grid;
+  grid-template-columns: 710px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Bloque de Gráficas */
+.charts-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chart-card {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  padding: 4px 6px 2px 6px;
+  position: relative;
+}
+
+.chart-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #334155;
+  text-align: center;
+  margin-bottom: 2px;
+  letter-spacing: 0.3px;
+}
+
+.chart-svg-container {
+  width: 100%;
+  height: 78px;
+}
+
+.chart-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Controles de Navegación Histórica de las Gráficas */
+.charts-history-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-top: 2px;
+}
+
+.nav-history-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.nav-history-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-hist {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.btn-hist:hover:not(:disabled) {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+.btn-hist:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Panel Superior Derecho (Lavadora y Certificación) */
+.upper-right-panel {
+  position: relative;
+  height: 100%;
+  min-height: 280px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding-right: 40px;
+  padding-bottom: 10px;
+}
+
+/* Lavadora (Túnel Invertido en U) */
+.lavadora-assembly {
+  position: relative;
+  width: 140px;
+  height: 230px;
+  margin-right: 30px;
+}
+
+.lavadora-shape {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 90px;
+  height: 210px;
+  background: var(--industrial-blue);
+  border: 2px solid var(--industrial-blue-border);
+  border-radius: 20px 20px 0 0;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.lavadora-shape:hover {
+  filter: brightness(1.08);
+}
+
+/* Hueco central interior de la U invertida */
+.lavadora-inner-loop {
+  position: absolute;
+  left: 28px;
+  bottom: 0;
+  width: 32px;
+  height: 160px;
+  background: #ffffff;
+  border-left: 2px solid var(--industrial-blue-border);
+  border-right: 2px solid var(--industrial-blue-border);
+  border-top: 2px solid var(--industrial-blue-border);
+  border-radius: 14px 14px 0 0;
+}
+
+.lavadora-text {
+  position: absolute;
+  left: 6px;
+  bottom: 40px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+
+/* Flechas de la Lavadora */
+.arrow-lavadora-top {
+  position: absolute;
+  top: -24px;
+  left: 14px;
+  font-size: 26px;
+  color: #1e40af;
+  font-weight: 900;
+  user-select: none;
+}
+
+.arrow-lavadora-down {
+  position: absolute;
+  top: 60px;
+  right: 18px;
+  font-size: 28px;
+  color: #1e40af;
+  font-weight: 900;
+  user-select: none;
+}
+
+/* Pista de salida desde Lavadora hacia Certificación */
+.track-to-cert {
+  position: absolute;
+  right: 18px;
+  bottom: 30px;
+  width: 52px;
+  height: 2px;
+  background: #000000;
+}
+
+.track-to-cert::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -14px;
+  width: 2px;
+  height: 16px;
+  background: #000000;
+}
+
+/* Certificación */
+.certificacion-assembly {
+  position: absolute;
+  right: 0;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.cert-box {
+  width: 34px;
+  height: 34px;
+  background: var(--industrial-ok-green);
+  border: 2px solid var(--industrial-ok-border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.cert-box:hover {
+  transform: scale(1.08);
+}
+
+.cert-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+  letter-spacing: 0.3px;
+  user-select: none;
+}
+
+/* SECCIÓN INFERIOR: LAYOUT DE LA LÍNEA E */
+.lower-section {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  margin-top: 10px;
+  padding-bottom: 36px;
+}
+
+/* Transportador (Izquierda) */
+.transportador-assembly {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+.arrow-transportador-down {
+  font-size: 28px;
+  color: #1e40af;
+  font-weight: 900;
+  margin-right: 8px;
+  margin-bottom: 40px;
+  user-select: none;
+}
+
+.transportador-box {
+  position: relative;
+  width: 44px;
+  height: 170px;
+  background: var(--industrial-blue);
+  border: 2px solid var(--industrial-blue-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.transportador-box:hover {
+  filter: brightness(1.08);
+}
+
+.transportador-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+
+/* Base L que conecta a OP10 */
+.transportador-l-base {
+  width: 28px;
+  height: 28px;
+  background: var(--industrial-blue);
+  border-top: 2px solid var(--industrial-blue-border);
+  border-bottom: 2px solid var(--industrial-blue-border);
+  margin-bottom: 0px;
+}
+
+/* Red de Soluble General (Flotante Arriba de OP10 - OP40) */
+.red-soluble-general-wrapper {
+  position: absolute;
+  left: 80px;
+  bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.red-soluble-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.3px;
+  user-select: none;
+}
+
+.red-soluble-squares {
+  display: flex;
+  gap: 26px;
+  padding-left: 10px;
+}
+
+.red-soluble-sq {
+  width: 24px;
+  height: 24px;
+  background: var(--industrial-network-pink);
+  border: 1.5px solid var(--industrial-network-border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+/* Cadena Horizontal de Operaciones */
+.operations-chain {
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Operación Individual */
+.op-cell {
+  position: relative;
+  width: 50px;
+  height: 82px;
+  background: var(--industrial-blue);
+  border: 1.5px solid #0f2942;
+  border-right: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.op-cell:last-child {
+  border-right: 1.5px solid #0f2942;
+}
+
+.op-cell:hover {
+  filter: brightness(1.1);
+}
+
+.op-cell-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* Agrupaciones Punteadas de Tanques */
+.tank-group {
+  position: relative;
+  border: 2px dashed var(--industrial-dashed-blue);
+  background: rgba(0, 51, 102, 0.02);
+  padding: 6px 4px 0 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 4px;
+}
+
+.tank-group-1 {
+  width: 108px;
+}
+
+.tank-group-2 {
+  width: 108px;
+}
+
+.tank-group-3 {
+  width: 160px;
+}
+
+/* Caja de Tanque */
+.tank-indicator {
+  width: 100%;
+  height: 26px;
+  background: var(--industrial-tank-yellow);
+  border: 1.5px solid var(--industrial-tank-border);
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.tank-indicator:hover {
+  filter: brightness(1.08);
+}
+
+.tank-ops-row {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.tank-ops-row .op-cell {
+  flex: 1;
+  width: auto;
+}
+
+.tank-ops-row .op-cell:last-child {
+  border-right: 1.5px solid #0f2942;
+}
+
+/* Caseta */
+.caseta-cell {
+  position: relative;
+  width: 52px;
+  height: 82px;
+  background: var(--industrial-blue);
+  border: 1.5px solid #0f2942;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.caseta-cell:hover {
+  filter: brightness(1.1);
+}
+
+.caseta-cell-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* Flecha Grande Inferior (Flujo OP10 -> CASETA) */
+.main-flow-arrow {
+  position: absolute;
+  left: 76px;
+  bottom: 8px;
+  height: 16px;
+  width: 580px;
+  display: flex;
+  align-items: center;
+}
+
+.main-flow-arrow svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Conexión de Transferencia a Lavadora */
+.conveyor-turn-wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  margin-left: 6px;
+}
+
+.arrow-caseta-up {
+  font-size: 28px;
+  color: #1e40af;
+  font-weight: 900;
+  margin-bottom: 24px;
+  user-select: none;
+}
+
+/* Curva negra que conecta a Lavadora */
+.conveyor-curve-track {
+  position: absolute;
+  left: 20px;
+  bottom: 0px;
+  width: 160px;
+  height: 120px;
+  pointer-events: none;
+}
+
+.conveyor-curve-track svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ==========================================================================
+   ESTADOS DE INDICADORES (REGLA 5)
+   - Gris fijo: Fuera de línea
+   - Rojo fijo: Operación deshabilitada
+   - Verde fijo: Nivel de concentración de refrigerante dentro de parámetros
+   - Rojo parpadeante: Concentración baja o última lectura > 24 horas
+   ========================================================================== */
+
+/* Gris Fijo: Fuera de línea */
+.status-grey {
+  background-color: var(--industrial-offline-grey) !important;
+  border-color: var(--industrial-offline-border) !important;
+  color: #ffffff !important;
+}
+
+/* Rojo Fijo: Operación deshabilitada (ej. OP60.1 y OP60.2) */
+.status-red {
+  background-color: var(--industrial-disabled-red) !important;
+  border-color: var(--industrial-disabled-border) !important;
+  color: #ffffff !important;
+}
+
+/* Verde Fijo: Dentro de parámetros */
+.status-green {
+  background-color: var(--industrial-ok-green) !important;
+  border-color: var(--industrial-ok-border) !important;
+  color: #ffffff !important;
+}
+
+/* Rojo Parpadeante: Por debajo de concentración requerida o >24h */
+.status-blink-red {
+  animation: blink-red-anim 1s infinite alternate !important;
+  color: #ffffff !important;
+}
+
+@keyframes blink-red-anim {
+  0% {
+    background-color: #ef4444;
+    border-color: #b91c1c;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+  }
+  100% {
+    background-color: #7f1d1d;
+    border-color: #450a0a;
+    box-shadow: 0 0 0px rgba(239, 68, 68, 0);
+  }
+}
+
+/* ==========================================================================
+   MODAL DE DETALLES Y CONFIGURACIÓN TELEGRAM
+   ========================================================================== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-content {
+  background: #ffffff;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 540px;
+  padding: 20px 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border: 1px solid #cbd5e1;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.modal-close:hover {
+  color: #0f172a;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 4px;
+}
+
+.form-input, .form-select {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  font-family: inherit;
+}
+
+.form-input:focus, .form-select:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.form-help {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #0284c7;
+  color: #ffffff;
+  border: 1px solid #0369a1;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #0369a1;
+}
+
+/* Tooltip Emergente al Hacer Hover en Celdas */
+.hmi-tooltip {
+  position: fixed;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 900;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+  display: none;
+  white-space: nowrap;
+}
+
+/* Adaptación Responsiva para Pantallas Pequeñas */
+@media (max-width: 1180px) {
+  .canvas-frame {
+    overflow-x: auto;
+  }
+}
+

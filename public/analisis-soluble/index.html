@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAYOUT LINEA “E” / BRP</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="../LOGO_KS-1.png" type="image/png">
+</head>
+<body>
+
+  <!-- Barra de Utilidades y Navegación Externa -->
+  <header class="top-nav-bar">
+    <div>
+      <a href="../" class="btn-nav btn-back" title="Volver al Mapa de Calor de Mantenimiento">
+        <span>&larr; Volver al Mapa de Calor</span>
+      </a>
+    </div>
+    <div class="nav-actions">
+      <!-- Opción visible y estética para descargar CSV (Regla 9) -->
+      <button id="btnDownloadCsv" class="btn-nav btn-csv" title="Descargar datos en formato CSV (Consecutivo, Día, Hora, Valor)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Descargar CSV</span>
+      </button>
+
+      <!-- Botón de Configuración y Estado de Telegram -->
+      <button id="btnConfigTelegram" class="btn-nav btn-telegram" title="Configurar Token y Chat ID de Telegram">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span>Telegram & Alertas</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MARCO PRINCIPAL DEL DIAGRAMA INDUSTRIAL (BASADO ESTRICTAMENTE EN LA IMAGEN) -->
+  <main class="canvas-frame">
+    <!-- Marca de Agua Vertical en Margen Izquierdo -->
+    <div class="watermark-left">
+      BRP ROTAX MÉXICO S.A. de C.V.
+    </div>
+
+    <!-- ENCABEZADO OFICIAL -->
+    <header class="diagram-header">
+      <!-- Esquina Superior Izquierda: Logo BRP -->
+      <div class="header-logo-left">
+        <img src="../LOGO_KS-1.png" alt="Logo BRP" />
+      </div>
+
+      <!-- TÍTULO EXACTO: LAYOUT LINEA “E” / BRP -->
+      <div class="header-title-container">
+        <h1 class="header-title">LAYOUT LINEA “E” / BRP</h1>
+      </div>
+
+      <!-- Esquina Superior Derecha: Logo JI&FIX SIGMA SA DE CV -->
+      <div class="header-logo-right">
+        <img src="../LOGO_JIFIX_BRP-1.jpg" alt="Logo JI&FIX SIGMA" />
+      </div>
+    </header>
+
+    <!-- CUERPO PRINCIPAL DEL DIAGRAMA -->
+    <div class="diagram-body">
+
+      <!-- ================================================================== -->
+      <!-- PARTE SUPERIOR: 3 GRÁFICAS Y CONJUNTO LAVADORA / CERTIFICACIÓN     -->
+      <!-- ================================================================== -->
+      <section class="upper-section">
+        <!-- Columna Izquierda: 3 Gráficas de Concentración de Soluble (Regla 6) -->
+        <div class="charts-wrapper">
+          <!-- Gráfica 1: Tanque 01 -->
+          <div class="chart-card">
+            <div class="chart-title">Concentracion de Soluble Tanque 01</div>
+            <div class="chart-svg-container">
+              <svg id="chartSvg01" class="chart-svg" viewBox="0 0 690 75"></svg>
+            </div>
+          </div>
+
+          <!-- Gráfica 2: Tanque 02 -->
+          <div class="chart-card">
+            <div class="chart-title">Concentracion de Soluble Tanque 02</div>
+            <div class="chart-svg-container">
+              <svg id="chartSvg02" class="chart-svg" viewBox="0 0 690 75"></svg>
+            </div>
+          </div>
+
+          <!-- Gráfica 3: Tanque 03 -->
+          <div class="chart-card">
+            <div class="chart-title">Concentracion de Soluble Tanque 03</div>
+            <div class="chart-svg-container">
+              <svg id="chartSvg03" class="chart-svg" viewBox="0 0 690 75"></svg>
+            </div>
+          </div>
+
+          <!-- Barra de Navegación de Histórico (Regla 6) -->
+          <div class="charts-history-nav">
+            <div id="histWindowLabel" class="nav-history-text">
+              Ventana: Últimas 24 horas (En Vivo)
+            </div>
+            <div class="nav-history-buttons">
+              <button id="btnHistPrev" class="btn-hist" title="Navegar ventana anterior (24h atrás)">
+                &lsaquo; Anterior
+              </button>
+              <button id="btnHistNext" class="btn-hist" title="Navegar ventana siguiente (24h adelante)" disabled>
+                Siguiente &rsaquo;
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Lavadora (U Invertida) y Certificación (Cuadrado Verde) -->
+        <div class="upper-right-panel">
+          <!-- Lavadora (Túnel Invertido en U) -->
+          <div class="lavadora-assembly">
+            <!-- Flecha Superior hacia la derecha -->
+            <div class="arrow-lavadora-top">&rarr;</div>
+
+            <!-- Cuerpo en U Invertida -->
+            <div class="lavadora-shape" data-section="Lavadora">
+              <span class="lavadora-text">Lavadora</span>
+              <!-- Hueco interior blanco que forma la U -->
+              <div class="lavadora-inner-loop"></div>
+            </div>
+
+            <!-- Flecha Derecha hacia abajo -->
+            <div class="arrow-lavadora-down">&darr;</div>
+
+            <!-- Pista que conecta la salida de Lavadora con Certificación -->
+            <div class="track-to-cert"></div>
+          </div>
+
+          <!-- Certificación (Cuadro Verde) -->
+          <div class="certificacion-assembly">
+            <div class="cert-box status-green" data-section="Certificación"></div>
+            <span class="cert-label">Certificación</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- PARTE INFERIOR: LAYOUT DE LA LÍNEA E (SECCIONES Y AGRUPACIONES)    -->
+      <!-- ================================================================== -->
+      <section class="lower-section">
+
+        <!-- 1. Transportador (Extremo Izquierdo) -->
+        <div class="transportador-assembly">
+          <!-- Flecha hacia abajo -->
+          <div class="arrow-transportador-down">&darr;</div>
+          
+          <!-- Bloque Vertical de Transportador -->
+          <div class="transportador-box" data-section="Transportador">
+            <span class="transportador-text">Transportador</span>
+          </div>
+
+          <!-- Base en L horizontal hacia OP10 -->
+          <div class="transportador-l-base"></div>
+        </div>
+
+        <!-- Red de Soluble General (Flotante arriba de OP10..OP40) -->
+        <div class="red-soluble-general-wrapper" data-section="Red de Soluble General">
+          <div class="red-soluble-label">Red de Soluble General</div>
+          <div class="red-soluble-squares">
+            <div class="red-soluble-sq" title="Suministro Red General OP10"></div>
+            <div class="red-soluble-sq" title="Suministro Red General Op20"></div>
+            <div class="red-soluble-sq" title="Suministro Red General Op30"></div>
+            <div class="red-soluble-sq" title="Suministro Red General Op40"></div>
+          </div>
+        </div>
+
+        <!-- 2. Cadena de Operaciones Principales -->
+        <div class="operations-chain">
+
+          <!-- OP10 -->
+          <div class="op-cell" data-section="OP10">
+            <span class="op-cell-text">OP10</span>
+          </div>
+
+          <!-- Op20 -->
+          <div class="op-cell" data-section="Op20">
+            <span class="op-cell-text">Op20</span>
+          </div>
+
+          <!-- Op30 -->
+          <div class="op-cell" data-section="Op30">
+            <span class="op-cell-text">Op30</span>
+          </div>
+
+          <!-- Op40 -->
+          <div class="op-cell" data-section="Op40">
+            <span class="op-cell-text">Op40</span>
+          </div>
+
+          <!-- AGRUPACIÓN 1: Tanque01 alimenta a OP50.1 y OP60.1 (Regla 4) -->
+          <div class="tank-group tank-group-1">
+            <div class="tank-indicator" data-section="Tanque01">Tanque01</div>
+            <div class="tank-ops-row">
+              <div class="op-cell" data-section="Op50.1">
+                <span class="op-cell-text">Op50.1</span>
+              </div>
+              <!-- OP60.1: Operación deshabilitada (ROJO FIJO - Regla 5) -->
+              <div class="op-cell status-red" data-section="OP60.1">
+                <span class="op-cell-text">OP60.1</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- AGRUPACIÓN 2: Tanque02 alimenta a Op50.2 y OP60.2 (Regla 4) -->
+          <div class="tank-group tank-group-2">
+            <div class="tank-indicator" data-section="Tanque02">Tanque02</div>
+            <div class="tank-ops-row">
+              <div class="op-cell" data-section="Op50.2">
+                <span class="op-cell-text">Op50.2</span>
+              </div>
+              <!-- OP60.2: Operación deshabilitada (ROJO FIJO - Regla 5) -->
+              <div class="op-cell status-red" data-section="OP60.2">
+                <span class="op-cell-text">OP60.2</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- AGRUPACIÓN 3: Tanque03 alimenta a Op70.1, Op70.2 y Op80 (Regla 4) -->
+          <div class="tank-group tank-group-3">
+            <div class="tank-indicator" data-section="Tanque03">Tanque03</div>
+            <div class="tank-ops-row">
+              <div class="op-cell" data-section="Op70.1">
+                <span class="op-cell-text">Op70.1</span>
+              </div>
+              <div class="op-cell" data-section="Op70.2">
+                <span class="op-cell-text">Op70.2</span>
+              </div>
+              <div class="op-cell" data-section="Op80">
+                <span class="op-cell-text">Op80</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- CASETA -->
+          <div class="caseta-cell" data-section="CASETA">
+            <span class="caseta-cell-text">CASETA</span>
+          </div>
+
+        </div>
+
+        <!-- Flecha Principal Inferior: Flujo OP10 a CASETA (Azul hacia la derecha) -->
+        <div class="main-flow-arrow">
+          <svg viewBox="0 0 580 16" preserveAspectRatio="none">
+            <defs>
+              <marker id="arrowhead-flow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <polygon points="0 0, 8 4, 0 8" fill="#1e40af" />
+              </marker>
+            </defs>
+            <line x1="0" y1="8" x2="570" y2="8" stroke="#1e40af" stroke-width="3" marker-end="url(#arrowhead-flow)" />
+          </svg>
+        </div>
+
+        <!-- Flecha hacia arriba y Curva que Conecta con la Entrada de Lavadora -->
+        <div class="conveyor-turn-wrapper">
+          <div class="arrow-caseta-up">&uarr;</div>
+          
+          <div class="conveyor-curve-track">
+            <svg viewBox="0 0 160 120" fill="none">
+              <!-- Curva negra del riel transportador hacia la base de Lavadora -->
+              <path d="M 0 100 Q 15 10, 80 15 T 140 0" stroke="#000000" stroke-width="2.5" fill="none" />
+            </svg>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- MODAL DE CONFIGURACIÓN DE TELEGRAM Y ALMACENAMIENTO -->
+  <div id="modalTelegram" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Configuración de Telegram & Motor de Alertas</h3>
+        <button id="modalClose" class="modal-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="telegramBotToken">Bot Token de Telegram</label>
+          <input type="text" id="telegramBotToken" class="form-input" placeholder="ej. 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ" />
+          <p class="form-help">Token del Bot oficial otorgado por @BotFather.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="telegramChatId">Chat ID / Canal de Supervisión</label>
+          <input type="text" id="telegramChatId" class="form-input" placeholder="ej. -1001234567890" />
+          <p class="form-help">ID del grupo o chat donde los operadores envían las fotos.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="telegramMinConcentration">Concentración Mínima Requerida (Brix)</label>
+          <input type="number" id="telegramMinConcentration" class="form-input" min="0" max="10" value="4" />
+          <p class="form-help">Valores por debajo de este umbral activan el indicador en rojo parpadeante.</p>
+        </div>
+
+        <!-- Simulador de Mensaje / Prueba de Integridad (Regla 7) -->
+        <div class="form-group" style="margin-top: 16px; padding-top: 14px; border-top: 1px dashed #cbd5e1;">
+          <label class="form-label" for="simTelegramText">Simulador de Lectura Telegram</label>
+          <input type="text" id="simTelegramText" class="form-input" placeholder='ej. "Tanque01 Linea E - Lectura: 7"' />
+          <p class="form-help">Etiquetas válidas: "Tanque01 Linea E", "Tanque02 Linea E", "Tanque03 Linea E".</p>
+          <button id="btnSimSubmit" class="btn-secondary" style="margin-top: 6px; width: 100%;">
+            Simular Recepción de Captura
+          </button>
+        </div>
+
+        <div style="margin-top: 14px; display: flex; gap: 8px;">
+          <button id="btnLoadDemoData" class="btn-secondary" style="flex: 1; font-size: 11px;">
+            Cargar Datos de Referencia (Imagen)
+          </button>
+          <button id="btnClearData" class="btn-secondary" style="color: #dc2626; font-size: 11px;">
+            Reiniciar BD
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btnTestTelegram" class="btn-secondary">Probar Conexión con Telegram</button>
+        <button id="btnSaveTelegramConfig" class="btn-primary">Guardar Configuración</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tooltip Emergente HMI -->
+  <div id="hmiTooltip" class="hmi-tooltip"></div>
+
+  <!-- Scripts Modularizados (Separación HTML, CSS y JS) -->
+  <script src="telegram.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
