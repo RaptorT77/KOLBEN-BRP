@@ -8,12 +8,13 @@
 
 const OFFICIAL_BOT_TOKEN = '9151291473:AAEDQ-q0fUckTWTv3Rw2v9mYsaEBdaaWVV4';
 const OFFICIAL_BOT_USERNAME = 'DASHBOARD_BRP_bot';
+const OFFICIAL_DEFAULT_CHAT_ID = '786120019';
 
 // SECCIÓN DE CONFIGURACIÓN OFICIAL
 const TELEGRAM_CONFIG = {
   botToken: OFFICIAL_BOT_TOKEN,
   botUsername: OFFICIAL_BOT_USERNAME,
-  chatId: '', // Se auto-detecta dinámicamente o se configura manualmente
+  chatId: OFFICIAL_DEFAULT_CHAT_ID, // Vinculado a Tony (786120019)
   
   // Parámetros operativos
   pollIntervalMs: 5000,                   // Sondeo cada 5 segundos
@@ -48,13 +49,15 @@ function loadTelegramConfig() {
     if (saved) {
       const parsed = JSON.parse(saved);
       TELEGRAM_CONFIG.botToken = parsed.botToken || OFFICIAL_BOT_TOKEN;
-      TELEGRAM_CONFIG.chatId = parsed.chatId || '';
+      TELEGRAM_CONFIG.chatId = parsed.chatId || OFFICIAL_DEFAULT_CHAT_ID;
       TELEGRAM_CONFIG.minConcentrationThreshold = parsed.minConcentrationThreshold || 4;
     } else {
       TELEGRAM_CONFIG.botToken = OFFICIAL_BOT_TOKEN;
+      TELEGRAM_CONFIG.chatId = OFFICIAL_DEFAULT_CHAT_ID;
     }
   } catch (err) {
     TELEGRAM_CONFIG.botToken = OFFICIAL_BOT_TOKEN;
+    TELEGRAM_CONFIG.chatId = OFFICIAL_DEFAULT_CHAT_ID;
   }
   return TELEGRAM_CONFIG;
 }
@@ -431,6 +434,7 @@ setTimeout(pollTelegramUpdates, 1000);
 // Exportar funciones para uso en app.js
 window.TelegramService = {
   OFFICIAL_BOT_TOKEN: OFFICIAL_BOT_TOKEN,
+  OFFICIAL_DEFAULT_CHAT_ID: OFFICIAL_DEFAULT_CHAT_ID,
   CONFIG: TELEGRAM_CONFIG,
   loadConfig: loadTelegramConfig,
   saveConfig: saveTelegramConfig,

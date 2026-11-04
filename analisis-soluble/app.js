@@ -384,8 +384,9 @@ document.addEventListener('DOMContentLoaded', () => {
     btnConfigTelegram.addEventListener('click', () => {
       const cfg = window.TelegramService.CONFIG;
       const defaultToken = window.TelegramService.OFFICIAL_BOT_TOKEN;
+      const defaultChatId = window.TelegramService.OFFICIAL_DEFAULT_CHAT_ID || '786120019';
       document.getElementById('telegramBotToken').value = cfg.botToken || defaultToken;
-      document.getElementById('telegramChatId').value = cfg.chatId || '';
+      document.getElementById('telegramChatId').value = cfg.chatId || defaultChatId;
       document.getElementById('telegramMinConcentration').value = cfg.minConcentrationThreshold || 4;
       modalTelegram.classList.add('active');
     });
