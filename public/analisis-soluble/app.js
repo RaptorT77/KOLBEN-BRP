@@ -16,6 +16,21 @@ document.addEventListener('DOMContentLoaded', () => {
     'Tanque03': ['Op70.1', 'Op70.2', 'Op80']
   };
 
+  // Helper para buscar elementos por data-section de forma insensible a mayúsculas
+  function getSectionElements(sectionName) {
+    if (!sectionName) return [];
+    const target = sectionName.trim().toLowerCase();
+    const all = document.querySelectorAll('[data-section]');
+    const results = [];
+    all.forEach(el => {
+      const val = (el.getAttribute('data-section') || '').trim().toLowerCase();
+      if (val === target) {
+        results.push(el);
+      }
+    });
+    return results;
+  }
+
   // Referencias DOM
   const tooltipEl = document.getElementById('hmiTooltip');
   const btnPrev = document.getElementById('btnHistPrev');
@@ -48,30 +63,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ['Tanque01', 'Tanque02', 'Tanque03'].forEach(tankId => {
       const list = readings[tankId] || [];
-      const tankEl = document.querySelector(`[data-section="${tankId}"]`);
-      if (!tankEl) return;
+      const tankElements = getSectionElements(tankId);
 
-      // Limpiar clases previas de estado
-      tankEl.classList.remove('status-green', 'status-blink-red', 'status-grey');
+      tankElements.forEach(tankEl => {
+        tankEl.classList.remove('status-green', 'status-blink-red', 'status-grey');
 
-      if (list.length === 0) {
-        // Sin capturas registradas: Fuera de línea (Gris fijo)
-        tankStatuses[tankId] = 'offline';
-        tankEl.classList.add('status-grey');
-      } else {
-        const lastCapture = list[list.length - 1];
-        const elapsed = now - lastCapture.timestamp;
-
-        // Regla: Rojo parpadeante si concentración < requerido o última captura > 24 horas
-        if (lastCapture.valor < minThreshold || elapsed > ONE_DAY_MS) {
-          tankStatuses[tankId] = 'warning';
-          tankEl.classList.add('status-blink-red');
+        if (list.length === 0) {
+          // Sin capturas registradas: Fuera de línea (Gris fijo)
+          tankStatuses[tankId] = 'offline';
+          tankEl.classList.add('status-grey');
         } else {
-          // Dentro de parámetros: Verde fijo
-          tankStatuses[tankId] = 'ok';
-          tankEl.classList.add('status-green');
+          const lastCapture = list[list.length - 1];
+          const elapsed = now - lastCapture.timestamp;
+
+          // Regla: Rojo parpadeante si concentración < requerido o última captura > 24 horas
+          if (lastCapture.valor < minThreshold || elapsed > ONE_DAY_MS) {
+            tankStatuses[tankId] = 'warning';
+            tankEl.classList.add('status-blink-red');
+          } else {
+            // Dentro de parámetros: Verde fijo
+            tankStatuses[tankId] = 'ok';
+            tankEl.classList.add('status-green');
+          }
         }
-      }
+      });
     });
 
     // Actualizar Operaciones según el tanque que las alimenta (Regla 4 y 5)
@@ -79,34 +94,36 @@ document.addEventListener('DOMContentLoaded', () => {
       const tankState = tankStatuses[tankId];
 
       ops.forEach(opName => {
-        const opEl = document.querySelector(`[data-section="${opName}"]`);
-        if (!opEl) return;
+        const opElements = getSectionElements(opName);
+        opElements.forEach(opEl => {
+          // Regla Estricta: OP60.1 y OP60.2 permanecen siempre en ROJO FIJO (operaciones deshabilitadas)
+          const normOp = opName.toUpperCase();
+          if (normOp === 'OP60.1' || normOp === 'OP60.2') {
+            opEl.classList.remove('status-green', 'status-blink-red', 'status-grey');
+            opEl.classList.add('status-red');
+            return;
+          }
 
-        // Regla Estricta: OP60.1 y OP60.2 permanecen siempre en ROJO FIJO (operaciones deshabilitadas)
-        if (opName === 'OP60.1' || opName === 'OP60.2') {
+          // Operaciones alimentadas reflejan el estado del tanque
           opEl.classList.remove('status-green', 'status-blink-red', 'status-grey');
-          opEl.classList.add('status-red');
-          return;
-        }
-
-        // Operaciones alimentadas reflejan el estado del tanque
-        opEl.classList.remove('status-green', 'status-blink-red', 'status-grey');
-        if (tankState === 'warning') {
-          opEl.classList.add('status-blink-red');
-        } else if (tankState === 'ok') {
-          // Si el tanque está OK, las operaciones normales muestran su estado industrial o verde
-          opEl.classList.add('status-green');
-        } else if (tankState === 'offline') {
-          opEl.classList.add('status-grey');
-        }
+          if (tankState === 'warning') {
+            opEl.classList.add('status-blink-red');
+          } else if (tankState === 'ok') {
+            opEl.classList.add('status-green');
+          } else if (tankState === 'offline') {
+            opEl.classList.add('status-grey');
+          }
+        });
       });
     });
 
     // Certificación: Siempre verde fijo en estado normal
-    const certEl = document.querySelector(`[data-section="Certificación"]`);
-    if (certEl && !certEl.classList.contains('status-green')) {
-      certEl.classList.add('status-green');
-    }
+    const certElements = getSectionElements('Certificación');
+    certElements.forEach(certEl => {
+      if (!certEl.classList.contains('status-green')) {
+        certEl.classList.add('status-green');
+      }
+    });
   }
 
   /**
@@ -138,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const plotHeight = height - paddingTop - paddingBottom;
 
     // Ventana de 24 muestras (horas 1 a 24)
-    // historyOffsetHours permite navegar por el histórico hasta 1 semana (7 días = 168 horas)
     const totalSamples = allSamples.length;
     let endIndex = totalSamples - historyOffsetHours;
     if (endIndex < 24) endIndex = Math.min(24, totalSamples);
@@ -196,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (windowSamples.length > 0) {
       const points = [];
       windowSamples.forEach((item, idx) => {
-        // Posicionar cada muestra en su respectiva hora (índice 0 a 23)
         const x = paddingLeft + idx * stepX;
         const valClamped = Math.max(0, Math.min(10, item.valor));
         const y = paddingTop + plotHeight - (valClamped / 10) * plotHeight;
@@ -257,7 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
       btnNext.disabled = false;
     }
 
-    // Límite de navegación: 1 semana (168 horas = 7 * 24 horas)
     const MAX_HIST_HOURS = 7 * 24;
     btnPrev.disabled = (historyOffsetHours >= MAX_HIST_HOURS - 24);
   }
@@ -280,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /**
    * ========================================================================
    * 3. DESCARGA DE DATOS EN CSV (REGLA 9)
-   * Columnas exactas requeridas: Consecutivo, Día, Hora, Valor
+   * Columnas exactas: Consecutivo, Día, Hora, Valor
    * ========================================================================
    */
   function exportReadingsToCsv() {
@@ -307,7 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Formato CSV con coma como separador y UTF-8 BOM para Excel
     const csvContent = '\uFEFF' + rows.map(r => r.join(',')).join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -327,11 +340,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /**
    * ========================================================================
-   * 4. TOOLTIPS E INTERACCIÓN CON SECCIONES DEL LAYOUT
+   * 4. TOOLTIPS E INTERACCIÓN CON ELEMENTOS DEL LAYOUT SVG
    * ========================================================================
    */
-  const allSections = document.querySelectorAll('[data-section]');
-  allSections.forEach(el => {
+  const interactiveSections = document.querySelectorAll('[data-section]');
+  interactiveSections.forEach(el => {
     el.addEventListener('mouseenter', (e) => {
       const name = el.getAttribute('data-section');
       let statusDesc = 'Operativo / En línea';
@@ -416,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Simulación de Entrada Telegram (para pruebas controladas de validación y extracción)
+  // Simulación de Entrada Telegram
   if (btnSimSubmit) {
     btnSimSubmit.addEventListener('click', () => {
       const text = inputSimText.value.trim();
@@ -437,7 +450,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Cargar datos demo de referencia (para verificar visualmente las 3 gráficas como en la imagen)
   if (btnLoadDemoData) {
     btnLoadDemoData.addEventListener('click', () => {
-      // Perfiles de 24 horas extraídos de la forma de onda de la imagen de referencia
       const sampleWaves = {
         Tanque01: [7, 2, 6, 6, 8, 4, 3, 3, 2, 5, 7, 9, 9, 2, 6, 5, 9, 7, 9, 3, 9, 5, 8, 3, 2],
         Tanque02: [6, 2, 6, 6, 8, 4, 3, 3, 2, 4, 6, 9, 9, 2, 6, 5, 9, 7, 9, 3, 9, 5, 8, 3, 2],
@@ -486,15 +498,12 @@ document.addEventListener('DOMContentLoaded', () => {
    * 6. CICLO PERIÓDICO (ALERTAS DE INACTIVIDAD DE 2 HORAS)
    * ========================================================================
    */
-  // Chequeo inicial
   renderAllCharts();
   updateIndicatorStatuses();
   window.TelegramService.checkInactivityAlerts();
 
-  // Chequeo recurrente cada minuto (60 segundos)
   setInterval(() => {
     window.TelegramService.checkInactivityAlerts();
     updateIndicatorStatuses();
   }, 60000);
 });
-

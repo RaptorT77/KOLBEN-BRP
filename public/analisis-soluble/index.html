@@ -9,7 +9,7 @@
 </head>
 <body>
 
-  <!-- Barra de Utilidades y Navegación Externa -->
+  <!-- BARRA SUPERIOR DE ACCESO Y ACCIONES -->
   <header class="top-nav-bar">
     <div>
       <a href="../" class="btn-nav btn-back" title="Volver al Mapa de Calor de Mantenimiento">
@@ -63,215 +63,212 @@
       </div>
     </header>
 
-    <!-- CUERPO PRINCIPAL DEL DIAGRAMA -->
-    <div class="diagram-body">
-
-      <!-- ================================================================== -->
-      <!-- PARTE SUPERIOR: 3 GRÁFICAS Y CONJUNTO LAVADORA / CERTIFICACIÓN     -->
-      <!-- ================================================================== -->
-      <section class="upper-section">
-        <!-- Columna Izquierda: 3 Gráficas de Concentración de Soluble (Regla 6) -->
-        <div class="charts-wrapper">
-          <!-- Gráfica 1: Tanque 01 -->
-          <div class="chart-card">
-            <div class="chart-title">Concentracion de Soluble Tanque 01</div>
-            <div class="chart-svg-container">
-              <svg id="chartSvg01" class="chart-svg" viewBox="0 0 690 75"></svg>
-            </div>
-          </div>
-
-          <!-- Gráfica 2: Tanque 02 -->
-          <div class="chart-card">
-            <div class="chart-title">Concentracion de Soluble Tanque 02</div>
-            <div class="chart-svg-container">
-              <svg id="chartSvg02" class="chart-svg" viewBox="0 0 690 75"></svg>
-            </div>
-          </div>
-
-          <!-- Gráfica 3: Tanque 03 -->
-          <div class="chart-card">
-            <div class="chart-title">Concentracion de Soluble Tanque 03</div>
-            <div class="chart-svg-container">
-              <svg id="chartSvg03" class="chart-svg" viewBox="0 0 690 75"></svg>
-            </div>
-          </div>
-
-          <!-- Barra de Navegación de Histórico (Regla 6) -->
-          <div class="charts-history-nav">
-            <div id="histWindowLabel" class="nav-history-text">
-              Ventana: Últimas 24 horas (En Vivo)
-            </div>
-            <div class="nav-history-buttons">
-              <button id="btnHistPrev" class="btn-hist" title="Navegar ventana anterior (24h atrás)">
-                &lsaquo; Anterior
-              </button>
-              <button id="btnHistNext" class="btn-hist" title="Navegar ventana siguiente (24h adelante)" disabled>
-                Siguiente &rsaquo;
-              </button>
-            </div>
+    <!-- ================================================================== -->
+    <!-- SECCIÓN SUPERIOR: 3 GRÁFICAS DE CONCENTRACIÓN DE SOLUBLE           -->
+    <!-- ================================================================== -->
+    <section class="upper-section">
+      <div class="charts-wrapper">
+        <!-- Gráfica 1: Tanque 01 -->
+        <div class="chart-card">
+          <div class="chart-title">Concentracion de Soluble Tanque 01</div>
+          <div class="chart-svg-container">
+            <svg id="chartSvg01" class="chart-svg" viewBox="0 0 690 75"></svg>
           </div>
         </div>
 
-        <!-- Columna Derecha: Lavadora (U Invertida) y Certificación (Cuadrado Verde) -->
-        <div class="upper-right-panel">
-          <!-- Lavadora (Túnel Invertido en U) -->
-          <div class="lavadora-assembly">
-            <!-- Flecha Superior hacia la derecha -->
-            <div class="arrow-lavadora-top">&rarr;</div>
-
-            <!-- Cuerpo en U Invertida -->
-            <div class="lavadora-shape" data-section="Lavadora">
-              <span class="lavadora-text">Lavadora</span>
-              <!-- Hueco interior blanco que forma la U -->
-              <div class="lavadora-inner-loop"></div>
-            </div>
-
-            <!-- Flecha Derecha hacia abajo -->
-            <div class="arrow-lavadora-down">&darr;</div>
-
-            <!-- Pista que conecta la salida de Lavadora con Certificación -->
-            <div class="track-to-cert"></div>
-          </div>
-
-          <!-- Certificación (Cuadro Verde) -->
-          <div class="certificacion-assembly">
-            <div class="cert-box status-green" data-section="Certificación"></div>
-            <span class="cert-label">Certificación</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================================================================== -->
-      <!-- PARTE INFERIOR: LAYOUT DE LA LÍNEA E (SECCIONES Y AGRUPACIONES)    -->
-      <!-- ================================================================== -->
-      <section class="lower-section">
-
-        <!-- 1. Transportador (Extremo Izquierdo) -->
-        <div class="transportador-assembly">
-          <!-- Flecha hacia abajo -->
-          <div class="arrow-transportador-down">&darr;</div>
-          
-          <!-- Bloque Vertical de Transportador -->
-          <div class="transportador-box" data-section="Transportador">
-            <span class="transportador-text">Transportador</span>
-          </div>
-
-          <!-- Base en L horizontal hacia OP10 -->
-          <div class="transportador-l-base"></div>
-        </div>
-
-        <!-- Red de Soluble General (Flotante arriba de OP10..OP40) -->
-        <div class="red-soluble-general-wrapper" data-section="Red de Soluble General">
-          <div class="red-soluble-label">Red de Soluble General</div>
-          <div class="red-soluble-squares">
-            <div class="red-soluble-sq" title="Suministro Red General OP10"></div>
-            <div class="red-soluble-sq" title="Suministro Red General Op20"></div>
-            <div class="red-soluble-sq" title="Suministro Red General Op30"></div>
-            <div class="red-soluble-sq" title="Suministro Red General Op40"></div>
+        <!-- Gráfica 2: Tanque 02 -->
+        <div class="chart-card">
+          <div class="chart-title">Concentracion de Soluble Tanque 02</div>
+          <div class="chart-svg-container">
+            <svg id="chartSvg02" class="chart-svg" viewBox="0 0 690 75"></svg>
           </div>
         </div>
 
-        <!-- 2. Cadena de Operaciones Principales -->
-        <div class="operations-chain">
-
-          <!-- OP10 -->
-          <div class="op-cell" data-section="OP10">
-            <span class="op-cell-text">OP10</span>
-          </div>
-
-          <!-- Op20 -->
-          <div class="op-cell" data-section="Op20">
-            <span class="op-cell-text">Op20</span>
-          </div>
-
-          <!-- Op30 -->
-          <div class="op-cell" data-section="Op30">
-            <span class="op-cell-text">Op30</span>
-          </div>
-
-          <!-- Op40 -->
-          <div class="op-cell" data-section="Op40">
-            <span class="op-cell-text">Op40</span>
-          </div>
-
-          <!-- AGRUPACIÓN 1: Tanque01 alimenta a OP50.1 y OP60.1 (Regla 4) -->
-          <div class="tank-group tank-group-1">
-            <div class="tank-indicator" data-section="Tanque01">Tanque01</div>
-            <div class="tank-ops-row">
-              <div class="op-cell" data-section="Op50.1">
-                <span class="op-cell-text">Op50.1</span>
-              </div>
-              <!-- OP60.1: Operación deshabilitada (ROJO FIJO - Regla 5) -->
-              <div class="op-cell status-red" data-section="OP60.1">
-                <span class="op-cell-text">OP60.1</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- AGRUPACIÓN 2: Tanque02 alimenta a Op50.2 y OP60.2 (Regla 4) -->
-          <div class="tank-group tank-group-2">
-            <div class="tank-indicator" data-section="Tanque02">Tanque02</div>
-            <div class="tank-ops-row">
-              <div class="op-cell" data-section="Op50.2">
-                <span class="op-cell-text">Op50.2</span>
-              </div>
-              <!-- OP60.2: Operación deshabilitada (ROJO FIJO - Regla 5) -->
-              <div class="op-cell status-red" data-section="OP60.2">
-                <span class="op-cell-text">OP60.2</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- AGRUPACIÓN 3: Tanque03 alimenta a Op70.1, Op70.2 y Op80 (Regla 4) -->
-          <div class="tank-group tank-group-3">
-            <div class="tank-indicator" data-section="Tanque03">Tanque03</div>
-            <div class="tank-ops-row">
-              <div class="op-cell" data-section="Op70.1">
-                <span class="op-cell-text">Op70.1</span>
-              </div>
-              <div class="op-cell" data-section="Op70.2">
-                <span class="op-cell-text">Op70.2</span>
-              </div>
-              <div class="op-cell" data-section="Op80">
-                <span class="op-cell-text">Op80</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- CASETA -->
-          <div class="caseta-cell" data-section="CASETA">
-            <span class="caseta-cell-text">CASETA</span>
-          </div>
-
-        </div>
-
-        <!-- Flecha Principal Inferior: Flujo OP10 a CASETA (Azul hacia la derecha) -->
-        <div class="main-flow-arrow">
-          <svg viewBox="0 0 580 16" preserveAspectRatio="none">
-            <defs>
-              <marker id="arrowhead-flow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-                <polygon points="0 0, 8 4, 0 8" fill="#1e40af" />
-              </marker>
-            </defs>
-            <line x1="0" y1="8" x2="570" y2="8" stroke="#1e40af" stroke-width="3" marker-end="url(#arrowhead-flow)" />
-          </svg>
-        </div>
-
-        <!-- Flecha hacia arriba y Curva que Conecta con la Entrada de Lavadora -->
-        <div class="conveyor-turn-wrapper">
-          <div class="arrow-caseta-up">&uarr;</div>
-          
-          <div class="conveyor-curve-track">
-            <svg viewBox="0 0 160 120" fill="none">
-              <!-- Curva negra del riel transportador hacia la base de Lavadora -->
-              <path d="M 0 100 Q 15 10, 80 15 T 140 0" stroke="#000000" stroke-width="2.5" fill="none" />
-            </svg>
+        <!-- Gráfica 3: Tanque 03 -->
+        <div class="chart-card">
+          <div class="chart-title">Concentracion de Soluble Tanque 03</div>
+          <div class="chart-svg-container">
+            <svg id="chartSvg03" class="chart-svg" viewBox="0 0 690 75"></svg>
           </div>
         </div>
+      </div>
 
-      </section>
+      <!-- Barra de Navegación de Histórico (Regla 6) -->
+      <div class="charts-history-nav">
+        <div id="histWindowLabel" class="nav-history-text">
+          Ventana: Últimas 24 horas (En Vivo)
+        </div>
+        <div class="nav-history-buttons">
+          <button id="btnHistPrev" class="btn-hist" title="Navegar ventana anterior (24h atrás)">
+            &lsaquo; Anterior
+          </button>
+          <button id="btnHistNext" class="btn-hist" title="Navegar ventana siguiente (24h adelante)" disabled>
+            Siguiente &rsaquo;
+          </button>
+        </div>
+      </div>
+    </section>
 
-    </div>
+    <!-- ================================================================== -->
+    <!-- SECCIÓN INFERIOR: DIAGRAMA INDUSTRIAL VECTORIAL DE LA LÍNEA E      -->
+    <!-- REPRODUCCIÓN 100% FIEL A LA IMAGEN DE REFERENCIA                   -->
+    <!-- ================================================================== -->
+    <section class="layout-svg-container">
+      <svg class="layout-svg" viewBox="0 0 1024 485" preserveAspectRatio="xMidYMid meet">
+        
+        <!-- ============================================================== -->
+        <!-- 1. TRANSPORTADOR (IZQUIERDA) Y FLECHA DESCENDENTE             -->
+        <!-- ============================================================== -->
+        <!-- Flecha hacia abajo junto a Transportador -->
+        <polygon points="55,315 65,315 65,347 74,347 60,366 46,347 55,347" fill="#366092" stroke="#1F385C" stroke-width="1.5" />
+        
+        <!-- Bloque Vertical Transportador -->
+        <rect x="87" y="265" width="52" height="156" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="Transportador" />
+        
+        <!-- Pie L horizontal hacia OP10 -->
+        <rect x="139" y="387" width="44" height="34" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" />
+        
+        <!-- Texto Transportador -->
+        <text x="113" y="358" transform="rotate(-90 113 358)" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#FFFFFF" class="op-text">Transportador</text>
+
+        <!-- ============================================================== -->
+        <!-- 2. RED DE SOLUBLE GENERAL (4 CUADROS ROSA ALINEADOS)           -->
+        <!-- ============================================================== -->
+        <g data-section="Red de Soluble General">
+          <text x="202" y="278" font-size="13" font-weight="bold" fill="#7F7F7F" class="op-text">Red de Soluble General</text>
+          <!-- Cuadro 1 sobre OP10 -->
+          <rect x="202" y="295" width="25" height="25" rx="3" fill="#D99694" stroke="#BF7674" stroke-width="1.5" class="hmi-interactive" />
+          <!-- Cuadro 2 sobre OP20 -->
+          <rect x="266" y="295" width="25" height="25" rx="3" fill="#D99694" stroke="#BF7674" stroke-width="1.5" class="hmi-interactive" />
+          <!-- Cuadro 3 sobre OP30 -->
+          <rect x="330" y="295" width="25" height="25" rx="3" fill="#D99694" stroke="#BF7674" stroke-width="1.5" class="hmi-interactive" />
+          <!-- Cuadro 4 sobre OP40 -->
+          <rect x="394" y="295" width="25" height="25" rx="3" fill="#D99694" stroke="#BF7674" stroke-width="1.5" class="hmi-interactive" />
+        </g>
+
+        <!-- ============================================================== -->
+        <!-- 3. OPERACIONES OP10 A OP40                                    -->
+        <!-- ============================================================== -->
+        <!-- OP10 -->
+        <rect x="183" y="352" width="64" height="67" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="OP10" />
+        <text x="215" y="386" transform="rotate(-90 215 386)" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#000000" class="op-text">OP10</text>
+
+        <!-- OP20 -->
+        <rect x="247" y="352" width="64" height="67" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="Op20" />
+        <text x="279" y="386" transform="rotate(-90 279 386)" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#000000" class="op-text">OP20</text>
+
+        <!-- OP30 -->
+        <rect x="311" y="352" width="64" height="67" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="Op30" />
+        <text x="343" y="386" transform="rotate(-90 343 386)" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#000000" class="op-text">OP30</text>
+
+        <!-- OP40 -->
+        <rect x="375" y="352" width="64" height="67" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="Op40" />
+        <text x="407" y="386" transform="rotate(-90 407 386)" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#000000" class="op-text">OP40</text>
+
+        <!-- ============================================================== -->
+        <!-- 4. GRUPO 1: TANQUE01 (ALIMENTA A OP50.1 Y OP60.1)              -->
+        <!-- ============================================================== -->
+        <!-- Rectángulo Punteado Azul Marino -->
+        <rect x="442" y="285" width="131" height="137" fill="none" stroke="#002060" stroke-width="2" stroke-dasharray="6,4" />
+        
+        <!-- Tanque01 (Amarillo/Oro) -->
+        <rect x="448" y="295" width="119" height="33" rx="2" fill="#FFC000" stroke="#D69B00" stroke-width="1.5" class="hmi-interactive" data-section="Tanque01" />
+        <text x="507" y="316" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#000000" class="op-text">Tanque01</text>
+        
+        <!-- OP50.1 -->
+        <rect x="445" y="352" width="63" height="67" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="Op50.1" />
+        <text x="476" y="386" transform="rotate(-90 476 386)" text-anchor="middle" font-size="12" font-weight="bold" fill="#000000" class="op-text">OP50.1</text>
+        
+        <!-- OP60.1: OPERACIÓN DESHABILITADA (ROJO FIJO REGLA 5) -->
+        <rect x="508" y="352" width="63" height="67" fill="#FF0000" stroke="#C00000" stroke-width="1.5" class="hmi-interactive status-red" data-section="OP60.1" />
+        <text x="539" y="386" transform="rotate(-90 539 386)" text-anchor="middle" font-size="12" font-weight="bold" fill="#000000" class="op-text">OP60.1</text>
+
+        <!-- ============================================================== -->
+        <!-- 5. GRUPO 2: TANQUE02 (ALIMENTA A OP50.2 Y OP60.2)              -->
+        <!-- ============================================================== -->
+        <!-- Rectángulo Punteado Azul Marino -->
+        <rect x="576" y="285" width="131" height="137" fill="none" stroke="#002060" stroke-width="2" stroke-dasharray="6,4" />
+        
+        <!-- Tanque02 (Amarillo/Oro) -->
+        <rect x="582" y="295" width="119" height="33" rx="2" fill="#FFC000" stroke="#D69B00" stroke-width="1.5" class="hmi-interactive" data-section="Tanque02" />
+        <text x="641" y="316" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#000000" class="op-text">Tanque02</text>
+        
+        <!-- OP50.2 -->
+        <rect x="579" y="352" width="63" height="67" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="Op50.2" />
+        <text x="610" y="386" transform="rotate(-90 610 386)" text-anchor="middle" font-size="12" font-weight="bold" fill="#000000" class="op-text">OP50.2</text>
+        
+        <!-- OP60.2: OPERACIÓN DESHABILITADA (ROJO FIJO REGLA 5) -->
+        <rect x="642" y="352" width="63" height="67" fill="#FF0000" stroke="#C00000" stroke-width="1.5" class="hmi-interactive status-red" data-section="OP60.2" />
+        <text x="673" y="386" transform="rotate(-90 673 386)" text-anchor="middle" font-size="12" font-weight="bold" fill="#000000" class="op-text">OP60.2</text>
+
+        <!-- ============================================================== -->
+        <!-- 6. GRUPO 3: TANQUE03 (ALIMENTA A OP70.1, OP70.2 Y OP80)        -->
+        <!-- ============================================================== -->
+        <!-- Rectángulo Punteado Azul Marino Extendido -->
+        <rect x="710" y="285" width="191" height="137" fill="none" stroke="#002060" stroke-width="2" stroke-dasharray="6,4" />
+        
+        <!-- Tanque03 (Amarillo/Oro Extendido) -->
+        <rect x="716" y="295" width="179" height="33" rx="2" fill="#FFC000" stroke="#D69B00" stroke-width="1.5" class="hmi-interactive" data-section="Tanque03" />
+        <text x="805" y="316" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#000000" class="op-text">Tanque03</text>
+        
+        <!-- OP70.1 -->
+        <rect x="713" y="352" width="63" height="67" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="Op70.1" />
+        <text x="744" y="386" transform="rotate(-90 744 386)" text-anchor="middle" font-size="12" font-weight="bold" fill="#000000" class="op-text">OP70.1</text>
+        
+        <!-- OP70.2 -->
+        <rect x="776" y="352" width="63" height="67" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="Op70.2" />
+        <text x="807" y="386" transform="rotate(-90 807 386)" text-anchor="middle" font-size="12" font-weight="bold" fill="#000000" class="op-text">OP70.2</text>
+        
+        <!-- OP80 -->
+        <rect x="839" y="352" width="63" height="67" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="Op80" />
+        <text x="870" y="386" transform="rotate(-90 870 386)" text-anchor="middle" font-size="12" font-weight="bold" fill="#000000" class="op-text">OP80</text>
+
+        <!-- ============================================================== -->
+        <!-- 7. CASETA                                                      -->
+        <!-- ============================================================== -->
+        <rect x="904" y="352" width="46" height="67" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="CASETA" />
+        <text x="927" y="386" transform="rotate(-90 927 386)" text-anchor="middle" font-size="12" font-weight="bold" fill="#000000" class="op-text">CASETA</text>
+
+        <!-- ============================================================== -->
+        <!-- 8. FLECHA PRINCIPAL INFERIOR (OP10 -> CASETA)                  -->
+        <!-- ============================================================== -->
+        <polygon points="155,454 790,454 790,447 812,459 790,471 790,464 155,464" fill="#366092" stroke="#1F385C" stroke-width="1.5" />
+
+        <!-- ============================================================== -->
+        <!-- 9. FLECHA ASCENDENTE Y CURVA NEGRA DE TRANSFERENCIA            -->
+        <!-- ============================================================== -->
+        <!-- Flecha hacia arriba a la derecha de CASETA -->
+        <polygon points="940,315 948,315 948,284 956,284 944,266 932,284 940,284" fill="#366092" stroke="#1F385C" stroke-width="1.5" />
+        
+        <!-- Curva negra que conecta CASETA con la base de Lavadora -->
+        <path d="M 928 419 L 928 335 Q 928 270 885 270 L 860 270 Q 848 270 848 252 L 848 234" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" />
+
+        <!-- ============================================================== -->
+        <!-- 10. LAVADORA (U INVERTIDA), FLECHAS Y SALIDA                   -->
+        <!-- ============================================================== -->
+        <!-- Flecha horizontal superior hacia la derecha -->
+        <polygon points="848,59 880,59 880,52 902,64 880,76 880,69 848,69" fill="#366092" stroke="#1F385C" stroke-width="1.5" />
+        
+        <!-- Flecha vertical derecha hacia abajo -->
+        <polygon points="924,100 934,100 934,134 942,134 929,152 916,134 924,134" fill="#366092" stroke="#1F385C" stroke-width="1.5" />
+
+        <!-- Cuerpo de Lavadora en U Invertida -->
+        <path d="M 836 234 L 836 127 A 38 38 0 0 1 912 127 L 912 180 L 886 180 L 886 127 A 12 12 0 0 0 862 127 L 862 234 Z" fill="#4F81BD" stroke="#1F385C" stroke-width="1.5" class="hmi-interactive" data-section="Lavadora" />
+        
+        <!-- Texto Lavadora -->
+        <text x="849" y="195" transform="rotate(-90 849 195)" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#FFFFFF" class="op-text">Lavadora</text>
+
+        <!-- Pista negra desde la base de Lavadora hacia Certificación -->
+        <path d="M 899 180 L 899 193 L 931 193" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" />
+
+        <!-- ============================================================== -->
+        <!-- 11. CERTIFICACIÓN (CUADRO VERDE)                               -->
+        <!-- ============================================================== -->
+        <rect x="931" y="181" width="25" height="24" rx="2" fill="#00B050" stroke="#007B37" stroke-width="1.5" class="hmi-interactive status-green" data-section="Certificación" />
+        <text x="944" y="218" text-anchor="middle" font-size="11" font-weight="bold" fill="#595959" class="op-text">Certificación</text>
+
+      </svg>
+    </section>
   </main>
 
   <!-- MODAL DE CONFIGURACIÓN DE TELEGRAM Y ALMACENAMIENTO -->
@@ -336,4 +333,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
