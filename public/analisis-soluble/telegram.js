@@ -2,19 +2,21 @@
  * ============================================================================
  * TELEGRAM.JS — MÓDULO DE INTEGRACIÓN TELEGRAM & MOTOR DE ALERTAS INDUSTRIALES
  * Monitoreo de Soluble / Refrigerante — Línea "E" (BRP / KOLBEN)
+ * Bot Oficial: @DASHBOARD_BRP_bot (https://t.me/DASHBOARD_BRP_bot)
  * ============================================================================
  */
 
-// SECCIÓN DE CONFIGURACIÓN CLARAMENTE IDENTIFICADA
+// SECCIÓN DE CONFIGURACIÓN OFICIAL
 const TELEGRAM_CONFIG = {
-  // Credenciales y endpoints de Telegram Bot API
-  botToken: '', // Token del bot (ej. '123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ')
-  chatId: '',   // ID del chat o grupo de supervisores (ej. '-1001234567890')
+  // Token oficial configurado
+  botToken: '9151291473:AAEDQ-q0fUckTWTv3Rw2v9mYsaEBdaaWVV4',
+  botUsername: 'DASHBOARD_BRP_bot',
+  chatId: '', // Se auto-detecta dinámicamente del primer mensaje o se configura manualmente
   
   // Parámetros operativos
-  pollIntervalMs: 15000,                  // Consulta cada 15 segundos
+  pollIntervalMs: 6000,                   // Sondeo automático cada 6 segundos
   alertInactivityLimitMs: 2 * 60 * 60 * 1000, // 2 HORAS (alerta por falta de lectura)
-  minConcentrationThreshold: 4,           // Nivel mínimo requerido (entero 0-10)
+  minConcentrationThreshold: 4,           // Nivel mínimo requerido (0-10)
   maxConcentrationThreshold: 8,           // Rango superior de trabajo
   historyMaxDurationMs: 7 * 24 * 60 * 60 * 1000, // 1 SEMANA (168 horas)
   
@@ -31,18 +33,21 @@ const STORAGE_KEYS = {
   CONFIG: 'brp_soluble_telegram_config_v1',
   READINGS: 'brp_soluble_readings_v1',
   ALERTS: 'brp_soluble_active_alerts_v1',
-  PROCESSED_MSGS: 'brp_soluble_processed_msgs_v1'
+  PROCESSED_MSGS: 'brp_soluble_processed_msgs_v1',
+  LAST_UPDATE_ID: 'brp_soluble_telegram_last_update_id_v1'
 };
 
 /**
- * Carga la configuración guardada desde localStorage o usa los valores por defecto.
+ * Carga la configuración guardada desde localStorage o usa los valores por defecto oficiales.
  */
 function loadTelegramConfig() {
   try {
     const saved = localStorage.getItem(STORAGE_KEYS.CONFIG);
     if (saved) {
       const parsed = JSON.parse(saved);
-      Object.assign(TELEGRAM_CONFIG, parsed);
+      if (parsed.botToken) TELEGRAM_CONFIG.botToken = parsed.botToken;
+      if (parsed.chatId) TELEGRAM_CONFIG.chatId = parsed.chatId;
+      if (parsed.minConcentrationThreshold) TELEGRAM_CONFIG.minConcentrationThreshold = parsed.minConcentrationThreshold;
     }
   } catch (err) {
     console.warn('No se pudo cargar la configuración de Telegram:', err);
@@ -128,7 +133,7 @@ function markMessageProcessed(messageId) {
     const list = raw ? JSON.parse(raw) : [];
     if (!list.includes(String(messageId))) {
       list.push(String(messageId));
-      if (list.length > 500) list.shift(); // Evitar crecimiento desmedido
+      if (list.length > 500) list.shift();
       localStorage.setItem(STORAGE_KEYS.PROCESSED_MSGS, JSON.stringify(list));
     }
   } catch (e) {
@@ -139,18 +144,21 @@ function markMessageProcessed(messageId) {
 /**
  * Envía un mensaje de texto mediante la API de Telegram.
  */
-async function sendTelegramMessage(text) {
-  if (!TELEGRAM_CONFIG.botToken || !TELEGRAM_CONFIG.chatId) {
-    console.log('[Telegram Mock/Local] Alerta no enviada (falta token o chatId):', text);
+async function sendTelegramMessage(text, targetChatId = null) {
+  const token = TELEGRAM_CONFIG.botToken;
+  const chat = targetChatId || TELEGRAM_CONFIG.chatId;
+
+  if (!token || !chat) {
+    console.log('[Telegram Local] Alerta no enviada (falta token o chatId):', text);
     return false;
   }
   try {
-    const url = `https://api.telegram.org/bot${TELEGRAM_CONFIG.botToken}/sendMessage`;
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chat_id: TELEGRAM_CONFIG.chatId,
+        chat_id: chat,
         text: text,
         parse_mode: 'HTML'
       })
@@ -165,11 +173,8 @@ async function sendTelegramMessage(text) {
 
 /**
  * PARSEO Y VALIDACIÓN DE LECTURA DESDE MENSAJE DE TELEGRAM (REGLA 7)
- * - Identifica etiqueta ("Tanque01 Linea E", etc.)
- * - Extrae valor entero entre 0 y 10
- * - Valida completitud e integridad (no inventa datos, no duplica)
  */
-function parseAndRegisterReading(rawText, messageId = null, customDate = null) {
+function parseAndRegisterReading(rawText, messageId = null, customDate = null, fromChatId = null) {
   if (!rawText) return { success: false, reason: 'Texto vacío' };
 
   // 1. Identificar Tanque
@@ -194,11 +199,9 @@ function parseAndRegisterReading(rawText, messageId = null, customDate = null) {
   }
 
   // 3. Extracción de lectura numérica (entero entre 0 y 10)
-  // Busca expresiones como "Lectura: 7", "Brix 6", "valor: 5", o número aislado en la línea
   const numberMatch = rawText.match(/(?:valor|brix|lectura|concentraci[oó]n)?\s*:?\s*(\b10|[0-9]\b)/i);
   if (!numberMatch) {
-    // Si no se pudo extraer una lectura válida, se solicita nuevamente la captura
-    solicitarReenvioLectura(identifiedTank);
+    solicitarReenvioLectura(identifiedTank, fromChatId);
     return {
       success: false,
       reason: 'No se encontró un número entero válido (0 a 10) en la lectura.'
@@ -207,7 +210,7 @@ function parseAndRegisterReading(rawText, messageId = null, customDate = null) {
 
   const numericValue = parseInt(numberMatch[1], 10);
   if (isNaN(numericValue) || numericValue < 0 || numericValue > 10) {
-    solicitarReenvioLectura(identifiedTank);
+    solicitarReenvioLectura(identifiedTank, fromChatId);
     return {
       success: false,
       reason: `El valor extraído (${numericValue}) está fuera del rango permitido (0-10).`
@@ -217,12 +220,12 @@ function parseAndRegisterReading(rawText, messageId = null, customDate = null) {
   // 4. Registro oficial con Fecha y Hora
   const now = customDate ? new Date(customDate) : new Date();
   const dayStr = now.toISOString().split('T')[0];
-  const timeStr = now.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+  const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
 
   const readings = getStoredReadings();
   const tankList = readings[identifiedTank] || [];
 
-  // Validar lectura intermedia para evitar duplicidad de información en el mismo minuto
+  // Validar lectura intermedia para evitar duplicidad de información
   const lastReading = tankList[tankList.length - 1];
   if (lastReading && Math.abs(now.getTime() - lastReading.timestamp) < 60000 && lastReading.value === numericValue) {
     return { success: false, reason: 'Lectura idéntica recibida hace menos de 1 minuto.' };
@@ -249,6 +252,9 @@ function parseAndRegisterReading(rawText, messageId = null, customDate = null) {
   // Desactivar alerta activa para este tanque al recibir lectura válida
   clearActiveAlert(identifiedTank);
 
+  // Notificar al sistema cliente
+  window.dispatchEvent(new CustomEvent('brp_reading_registered', { detail: newRecord }));
+
   return {
     success: true,
     record: newRecord
@@ -258,9 +264,9 @@ function parseAndRegisterReading(rawText, messageId = null, customDate = null) {
 /**
  * Solicita nuevamente la captura si la imagen/texto no contiene lectura válida.
  */
-function solicitarReenvioLectura(tankId) {
+function solicitarReenvioLectura(tankId, fromChatId = null) {
   const msg = `⚠️ <b>Aviso Línea E:</b> No fue posible extraer una lectura numérica válida (entero 0-10) para el <b>${tankId}</b>. Por favor envíe nuevamente una fotografía nítida con la etiqueta "<b>${tankId} Linea E</b>".`;
-  sendTelegramMessage(msg);
+  sendTelegramMessage(msg, fromChatId);
 }
 
 /**
@@ -313,10 +319,8 @@ async function checkInactivityAlerts() {
     const isInactive = (lastCaptureTime === 0) || (elapsed >= limitMs);
 
     if (isInactive) {
-      // Verificar si ya existe una alerta activa para evitar envíos repetitivos
       const alertInfo = alerts[tankId];
       if (!alertInfo || !alertInfo.active) {
-        // Enviar alerta oficial por Telegram
         const message = `⚠️ <b>Aviso de Mantenimiento Línea E:</b> Se requiere enviar la lectura actual del soluble para el <b>${tankId}</b>. Han transcurrido más de 2 horas sin registro.`;
         const sent = await sendTelegramMessage(message);
         setActiveAlert(tankId);
@@ -326,8 +330,82 @@ async function checkInactivityAlerts() {
   }
 }
 
+/**
+ * MOTOR DE CONSULTA EN TIEMPO REAL (TELEGRAM POLLING)
+ * Recibe fotos y mensajes enviados a @DASHBOARD_BRP_bot
+ */
+let isPollingActive = false;
+
+async function pollTelegramUpdates() {
+  if (isPollingActive) return;
+  const token = TELEGRAM_CONFIG.botToken;
+  if (!token) return;
+
+  isPollingActive = true;
+  try {
+    let lastUpdateId = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_UPDATE_ID) || '0', 10);
+    const url = `https://api.telegram.org/bot${token}/getUpdates?offset=${lastUpdateId + 1}&limit=10`;
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      isPollingActive = false;
+      return;
+    }
+
+    const data = await response.json();
+    if (data.ok && Array.isArray(data.result) && data.result.length > 0) {
+      for (const update of data.result) {
+        if (update.update_id > lastUpdateId) {
+          lastUpdateId = update.update_id;
+          localStorage.setItem(STORAGE_KEYS.LAST_UPDATE_ID, String(lastUpdateId));
+        }
+
+        const msg = update.message || update.channel_post;
+        if (!msg) continue;
+
+        const chatId = String(msg.chat.id);
+        // Auto-detectar Chat ID si aún no está configurado
+        if (!TELEGRAM_CONFIG.chatId) {
+          TELEGRAM_CONFIG.chatId = chatId;
+          saveTelegramConfig(TELEGRAM_CONFIG);
+          console.log(`[Telegram Auto-Detect] Chat ID configurado automáticamente: ${chatId}`);
+        }
+
+        const rawText = (msg.caption || msg.text || '').trim();
+
+        // Comando /start o saludo
+        if (rawText === '/start') {
+          const welcomeMsg = `👋 <b>Bienvenido al Monitor de Soluble Línea E (BRP)</b>\n\nPara registrar lecturas de soluble, envíe la foto del refractómetro o mensaje con una de estas etiquetas oficiales:\n• <code>Tanque01 Linea E</code>\n• <code>Tanque02 Linea E</code>\n• <code>Tanque03 Linea E</code>\n\nEl sistema registrará el valor numérico (0 a 10) y actualizará el layout en tiempo real.`;
+          await sendTelegramMessage(welcomeMsg, chatId);
+          continue;
+        }
+
+        // Verificar si contiene etiqueta oficial de tanque
+        const hasTag = Object.values(TELEGRAM_CONFIG.validTags).some(rx => rx.test(rawText));
+        if (hasTag) {
+          const res = parseAndRegisterReading(rawText, msg.message_id, msg.date * 1000, chatId);
+          if (res.success) {
+            const confirmMsg = `✅ <b>Lectura Registrada con Éxito</b>\n<b>Tanque:</b> ${res.record.tanque}\n<b>Concentración:</b> ${res.record.valor} Brix\n<b>Fecha y Hora:</b> ${res.record.dia} ${res.record.hora}\n\n<i>Dashboard actualizado en vivo.</i>`;
+            await sendTelegramMessage(confirmMsg, chatId);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    // Falla transitoria de red; se reintentará en el próximo ciclo
+    console.debug('Polling telegram tick:', err.message);
+  } finally {
+    isPollingActive = false;
+  }
+}
+
 // Inicializar configuración al cargar módulo
 loadTelegramConfig();
+
+// Iniciar sondeo periódico cada 6 segundos
+setInterval(pollTelegramUpdates, TELEGRAM_CONFIG.pollIntervalMs);
+// Primer chequeo inmediato
+setTimeout(pollTelegramUpdates, 1000);
 
 // Exportar funciones para uso en app.js
 window.TelegramService = {
@@ -340,6 +418,6 @@ window.TelegramService = {
   checkInactivityAlerts: checkInactivityAlerts,
   sendMessage: sendTelegramMessage,
   clearActiveAlert: clearActiveAlert,
-  getActiveAlerts: getActiveAlerts
+  getActiveAlerts: getActiveAlerts,
+  pollUpdates: pollTelegramUpdates
 };
-

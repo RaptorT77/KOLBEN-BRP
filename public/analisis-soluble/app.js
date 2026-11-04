@@ -495,9 +495,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /**
    * ========================================================================
-   * 6. CICLO PERIÓDICO (ALERTAS DE INACTIVIDAD DE 2 HORAS)
+   * 6. CICLO PERIÓDICO (ALERTAS DE INACTIVIDAD DE 2 HORAS) Y TIEMPO REAL
    * ========================================================================
    */
+  // Escuchar lecturas entrantes desde Telegram en tiempo real
+  window.addEventListener('brp_reading_registered', () => {
+    renderAllCharts();
+    updateIndicatorStatuses();
+  });
+
   renderAllCharts();
   updateIndicatorStatuses();
   window.TelegramService.checkInactivityAlerts();
