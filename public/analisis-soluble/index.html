@@ -288,8 +288,13 @@
 
         <div class="form-group">
           <label class="form-label" for="telegramChatId">Chat ID / Canal de Supervisión</label>
-          <input type="text" id="telegramChatId" class="form-input" placeholder="ej. -1001234567890" />
-          <p class="form-help">ID del grupo o chat donde los operadores envían las fotos.</p>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="telegramChatId" class="form-input" placeholder="Se detecta automáticamente con /start" />
+            <button id="btnDetectChatId" class="btn-secondary" style="white-space: nowrap; font-size: 11px; padding: 6px 10px;" type="button">
+              🔍 Auto-detectar
+            </button>
+          </div>
+          <p class="form-help">Envía <b>/start</b> a <a href="https://t.me/DASHBOARD_BRP_bot" target="_blank" style="color: #366092; font-weight: bold; text-decoration: underline;">@DASHBOARD_BRP_bot</a> y presiona Auto-detectar.</p>
         </div>
 
         <div class="form-group">
