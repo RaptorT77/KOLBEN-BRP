@@ -383,7 +383,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnConfigTelegram) {
     btnConfigTelegram.addEventListener('click', () => {
       const cfg = window.TelegramService.CONFIG;
-      document.getElementById('telegramBotToken').value = cfg.botToken || '';
+      const defaultToken = window.TelegramService.OFFICIAL_BOT_TOKEN;
+      document.getElementById('telegramBotToken').value = cfg.botToken || defaultToken;
       document.getElementById('telegramChatId').value = cfg.chatId || '';
       document.getElementById('telegramMinConcentration').value = cfg.minConcentrationThreshold || 4;
       modalTelegram.classList.add('active');
@@ -396,9 +397,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Botón para auto-detectar el Chat ID desde getUpdates
+  const btnDetectChatId = document.getElementById('btnDetectChatId');
+  if (btnDetectChatId) {
+    btnDetectChatId.addEventListener('click', async () => {
+      btnDetectChatId.disabled = true;
+      btnDetectChatId.textContent = 'Buscando...';
+      const res = await window.TelegramService.detectChatId();
+      btnDetectChatId.disabled = false;
+      btnDetectChatId.textContent = '🔍 Auto-detectar';
+
+      if (res.success) {
+        document.getElementById('telegramChatId').value = res.chatId;
+        alert(`✅ Chat ID detectado con éxito:\n${res.chatId} (${res.chatTitle})\n\nYa puedes probar la conexión.`);
+      } else {
+        alert(
+          'ℹ️ No se detectó ningún mensaje entrante aún.\n\n' +
+          '1. Abre Telegram y entra a: https://t.me/DASHBOARD_BRP_bot\n' +
+          '2. Presiona "Iniciar" o envía cualquier mensaje (ej. /start o Hola)\n' +
+          '3. Vuelve aquí y presiona "Auto-detectar".'
+        );
+      }
+    });
+  }
+
   if (btnSaveTelegramConfig) {
     btnSaveTelegramConfig.addEventListener('click', () => {
-      const token = document.getElementById('telegramBotToken').value.trim();
+      const token = document.getElementById('telegramBotToken').value.trim() || window.TelegramService.OFFICIAL_BOT_TOKEN;
       const chatId = document.getElementById('telegramChatId').value.trim();
       const minConc = parseInt(document.getElementById('telegramMinConcentration').value, 10) || 4;
 
@@ -417,14 +442,45 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnTestTelegram) {
     btnTestTelegram.addEventListener('click', async () => {
       btnTestTelegram.disabled = true;
-      btnTestTelegram.textContent = 'Enviando...';
-      const ok = await window.TelegramService.sendMessage('🔔 <b>Prueba de Conexión:</b> Monitoreo de Soluble Línea E (BRP / KOLBEN) vinculado correctamente con Telegram.');
+      btnTestTelegram.textContent = 'Verificando...';
+
+      const tokenInput = document.getElementById('telegramBotToken').value.trim() || window.TelegramService.OFFICIAL_BOT_TOKEN;
+      let chatIdInput = document.getElementById('telegramChatId').value.trim();
+
+      // Si el Chat ID está vacío, intentamos auto-detectarlo automáticamente
+      if (!chatIdInput) {
+        btnTestTelegram.textContent = 'Detectando Chat ID...';
+        const detectRes = await window.TelegramService.detectChatId();
+        if (detectRes.success) {
+          chatIdInput = detectRes.chatId;
+          document.getElementById('telegramChatId').value = chatIdInput;
+          window.TelegramService.saveConfig({ botToken: tokenInput, chatId: chatIdInput });
+        } else {
+          btnTestTelegram.disabled = false;
+          btnTestTelegram.textContent = 'Probar Conexión con Telegram';
+          alert(
+            '⚠️ Para enviar el mensaje de prueba, primero debes iniciar una conversación con el bot:\n\n' +
+            '1. Entra a: https://t.me/DASHBOARD_BRP_bot (@DASHBOARD_BRP_bot)\n' +
+            '2. Presiona "Iniciar" o envía /start\n' +
+            '3. Vuelve a hacer clic aquí en "Probar Conexión con Telegram".\n\n' +
+            'Tu Chat ID se vinculará automáticamente.'
+          );
+          return;
+        }
+      }
+
+      btnTestTelegram.textContent = 'Enviando prueba...';
+      const ok = await window.TelegramService.sendMessage(
+        '🔔 <b>Prueba de Conexión Exitosa:</b> El sistema de Monitoreo de Soluble Línea E (BRP / KOLBEN) está vinculado correctamente.',
+        chatIdInput
+      );
       btnTestTelegram.disabled = false;
       btnTestTelegram.textContent = 'Probar Conexión con Telegram';
+
       if (ok) {
-        alert('Mensaje de prueba enviado exitosamente a Telegram.');
+        alert(`✅ Mensaje de prueba enviado exitosamente a Telegram.\nChat ID vinculado: ${chatIdInput}`);
       } else {
-        alert('No se pudo enviar el mensaje. Verifique su Bot Token y Chat ID.');
+        alert('❌ No se pudo enviar el mensaje. Asegúrate de haber enviado /start al bot en Telegram antes de probar.');
       }
     });
   }

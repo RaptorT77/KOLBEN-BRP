@@ -6,15 +6,17 @@
  * ============================================================================
  */
 
+const OFFICIAL_BOT_TOKEN = '9151291473:AAEDQ-q0fUckTWTv3Rw2v9mYsaEBdaaWVV4';
+const OFFICIAL_BOT_USERNAME = 'DASHBOARD_BRP_bot';
+
 // SECCIÓN DE CONFIGURACIÓN OFICIAL
 const TELEGRAM_CONFIG = {
-  // Token oficial configurado
-  botToken: '9151291473:AAEDQ-q0fUckTWTv3Rw2v9mYsaEBdaaWVV4',
-  botUsername: 'DASHBOARD_BRP_bot',
-  chatId: '', // Se auto-detecta dinámicamente del primer mensaje o se configura manualmente
+  botToken: OFFICIAL_BOT_TOKEN,
+  botUsername: OFFICIAL_BOT_USERNAME,
+  chatId: '', // Se auto-detecta dinámicamente o se configura manualmente
   
   // Parámetros operativos
-  pollIntervalMs: 6000,                   // Sondeo automático cada 6 segundos
+  pollIntervalMs: 5000,                   // Sondeo cada 5 segundos
   alertInactivityLimitMs: 2 * 60 * 60 * 1000, // 2 HORAS (alerta por falta de lectura)
   minConcentrationThreshold: 4,           // Nivel mínimo requerido (0-10)
   maxConcentrationThreshold: 8,           // Rango superior de trabajo
@@ -38,19 +40,21 @@ const STORAGE_KEYS = {
 };
 
 /**
- * Carga la configuración guardada desde localStorage o usa los valores por defecto oficiales.
+ * Carga la configuración guardada desde localStorage o usa los valores oficiales por defecto.
  */
 function loadTelegramConfig() {
   try {
     const saved = localStorage.getItem(STORAGE_KEYS.CONFIG);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed.botToken) TELEGRAM_CONFIG.botToken = parsed.botToken;
-      if (parsed.chatId) TELEGRAM_CONFIG.chatId = parsed.chatId;
-      if (parsed.minConcentrationThreshold) TELEGRAM_CONFIG.minConcentrationThreshold = parsed.minConcentrationThreshold;
+      TELEGRAM_CONFIG.botToken = parsed.botToken || OFFICIAL_BOT_TOKEN;
+      TELEGRAM_CONFIG.chatId = parsed.chatId || '';
+      TELEGRAM_CONFIG.minConcentrationThreshold = parsed.minConcentrationThreshold || 4;
+    } else {
+      TELEGRAM_CONFIG.botToken = OFFICIAL_BOT_TOKEN;
     }
   } catch (err) {
-    console.warn('No se pudo cargar la configuración de Telegram:', err);
+    TELEGRAM_CONFIG.botToken = OFFICIAL_BOT_TOKEN;
   }
   return TELEGRAM_CONFIG;
 }
@@ -60,6 +64,7 @@ function loadTelegramConfig() {
  */
 function saveTelegramConfig(newConfig) {
   Object.assign(TELEGRAM_CONFIG, newConfig);
+  if (!TELEGRAM_CONFIG.botToken) TELEGRAM_CONFIG.botToken = OFFICIAL_BOT_TOKEN;
   localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify({
     botToken: TELEGRAM_CONFIG.botToken,
     chatId: TELEGRAM_CONFIG.chatId,
@@ -76,7 +81,7 @@ function getStoredReadings() {
     if (!raw) return { Tanque01: [], Tanque02: [], Tanque03: [] };
     const data = JSON.parse(raw);
     
-    // Verificación de reinicio semanal (Regla 6: al completarse 1 semana se reinicia la base de datos)
+    // Verificación de reinicio semanal (Regla 6)
     const allTimestamps = [
       ...(data.Tanque01 || []).map(r => r.timestamp),
       ...(data.Tanque02 || []).map(r => r.timestamp),
@@ -145,11 +150,11 @@ function markMessageProcessed(messageId) {
  * Envía un mensaje de texto mediante la API de Telegram.
  */
 async function sendTelegramMessage(text, targetChatId = null) {
-  const token = TELEGRAM_CONFIG.botToken;
+  const token = TELEGRAM_CONFIG.botToken || OFFICIAL_BOT_TOKEN;
   const chat = targetChatId || TELEGRAM_CONFIG.chatId;
 
   if (!token || !chat) {
-    console.log('[Telegram Local] Alerta no enviada (falta token o chatId):', text);
+    console.warn('[Telegram] No se pudo enviar mensaje: falta token o chatId');
     return false;
   }
   try {
@@ -168,6 +173,41 @@ async function sendTelegramMessage(text, targetChatId = null) {
   } catch (err) {
     console.error('Error enviando mensaje a Telegram:', err);
     return false;
+  }
+}
+
+/**
+ * Detecta automáticamente el Chat ID a partir de los mensajes recibidos en Telegram.
+ */
+async function detectChatIdFromUpdates() {
+  const token = TELEGRAM_CONFIG.botToken || OFFICIAL_BOT_TOKEN;
+  if (!token) return { success: false, reason: 'Falta Bot Token' };
+  try {
+    const resp = await fetch(`https://api.telegram.org/bot${token}/getUpdates?limit=25`);
+    const data = await resp.json();
+    if (data.ok && Array.isArray(data.result) && data.result.length > 0) {
+      for (let i = data.result.length - 1; i >= 0; i--) {
+        const item = data.result[i];
+        const msg = item.message || item.channel_post;
+        if (msg && msg.chat && msg.chat.id) {
+          const detectedId = String(msg.chat.id);
+          TELEGRAM_CONFIG.chatId = detectedId;
+          saveTelegramConfig(TELEGRAM_CONFIG);
+          const fromUser = msg.from ? `@${msg.from.username || msg.from.first_name}` : 'Chat';
+          return {
+            success: true,
+            chatId: detectedId,
+            chatTitle: msg.chat.title || fromUser
+          };
+        }
+      }
+    }
+    return {
+      success: false,
+      reason: 'No se encontraron mensajes en el bot aún.'
+    };
+  } catch (e) {
+    return { success: false, reason: e.message };
   }
 }
 
@@ -225,7 +265,6 @@ function parseAndRegisterReading(rawText, messageId = null, customDate = null, f
   const readings = getStoredReadings();
   const tankList = readings[identifiedTank] || [];
 
-  // Validar lectura intermedia para evitar duplicidad de información
   const lastReading = tankList[tankList.length - 1];
   if (lastReading && Math.abs(now.getTime() - lastReading.timestamp) < 60000 && lastReading.value === numericValue) {
     return { success: false, reason: 'Lectura idéntica recibida hace menos de 1 minuto.' };
@@ -249,10 +288,8 @@ function parseAndRegisterReading(rawText, messageId = null, customDate = null, f
     markMessageProcessed(messageId);
   }
 
-  // Desactivar alerta activa para este tanque al recibir lectura válida
   clearActiveAlert(identifiedTank);
 
-  // Notificar al sistema cliente
   window.dispatchEvent(new CustomEvent('brp_reading_registered', { detail: newRecord }));
 
   return {
@@ -261,17 +298,11 @@ function parseAndRegisterReading(rawText, messageId = null, customDate = null, f
   };
 }
 
-/**
- * Solicita nuevamente la captura si la imagen/texto no contiene lectura válida.
- */
 function solicitarReenvioLectura(tankId, fromChatId = null) {
   const msg = `⚠️ <b>Aviso Línea E:</b> No fue posible extraer una lectura numérica válida (entero 0-10) para el <b>${tankId}</b>. Por favor envíe nuevamente una fotografía nítida con la etiqueta "<b>${tankId} Linea E</b>".`;
   sendTelegramMessage(msg, fromChatId);
 }
 
-/**
- * GESTIÓN DE ALERTAS POR FALTA DE LECTURA (> 2 HORAS) (REGLA 8)
- */
 function getActiveAlerts() {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.ALERTS);
@@ -295,15 +326,11 @@ function clearActiveAlert(tankId) {
   }
 }
 
-/**
- * Chequea la inactividad de cada tanque.
- * Si han pasado más de 2 horas sin nueva lectura y no hay alerta activa, envía mensaje.
- */
 async function checkInactivityAlerts() {
   const readings = getStoredReadings();
   const alerts = getActiveAlerts();
   const now = Date.now();
-  const limitMs = TELEGRAM_CONFIG.alertInactivityLimitMs; // 2 horas
+  const limitMs = TELEGRAM_CONFIG.alertInactivityLimitMs;
 
   const tanks = ['Tanque01', 'Tanque02', 'Tanque03'];
 
@@ -332,13 +359,12 @@ async function checkInactivityAlerts() {
 
 /**
  * MOTOR DE CONSULTA EN TIEMPO REAL (TELEGRAM POLLING)
- * Recibe fotos y mensajes enviados a @DASHBOARD_BRP_bot
  */
 let isPollingActive = false;
 
 async function pollTelegramUpdates() {
   if (isPollingActive) return;
-  const token = TELEGRAM_CONFIG.botToken;
+  const token = TELEGRAM_CONFIG.botToken || OFFICIAL_BOT_TOKEN;
   if (!token) return;
 
   isPollingActive = true;
@@ -364,7 +390,6 @@ async function pollTelegramUpdates() {
         if (!msg) continue;
 
         const chatId = String(msg.chat.id);
-        // Auto-detectar Chat ID si aún no está configurado
         if (!TELEGRAM_CONFIG.chatId) {
           TELEGRAM_CONFIG.chatId = chatId;
           saveTelegramConfig(TELEGRAM_CONFIG);
@@ -373,14 +398,12 @@ async function pollTelegramUpdates() {
 
         const rawText = (msg.caption || msg.text || '').trim();
 
-        // Comando /start o saludo
         if (rawText === '/start') {
           const welcomeMsg = `👋 <b>Bienvenido al Monitor de Soluble Línea E (BRP)</b>\n\nPara registrar lecturas de soluble, envíe la foto del refractómetro o mensaje con una de estas etiquetas oficiales:\n• <code>Tanque01 Linea E</code>\n• <code>Tanque02 Linea E</code>\n• <code>Tanque03 Linea E</code>\n\nEl sistema registrará el valor numérico (0 a 10) y actualizará el layout en tiempo real.`;
           await sendTelegramMessage(welcomeMsg, chatId);
           continue;
         }
 
-        // Verificar si contiene etiqueta oficial de tanque
         const hasTag = Object.values(TELEGRAM_CONFIG.validTags).some(rx => rx.test(rawText));
         if (hasTag) {
           const res = parseAndRegisterReading(rawText, msg.message_id, msg.date * 1000, chatId);
@@ -392,7 +415,6 @@ async function pollTelegramUpdates() {
       }
     }
   } catch (err) {
-    // Falla transitoria de red; se reintentará en el próximo ciclo
     console.debug('Polling telegram tick:', err.message);
   } finally {
     isPollingActive = false;
@@ -402,13 +424,13 @@ async function pollTelegramUpdates() {
 // Inicializar configuración al cargar módulo
 loadTelegramConfig();
 
-// Iniciar sondeo periódico cada 6 segundos
+// Sondeo periódico cada 5 segundos
 setInterval(pollTelegramUpdates, TELEGRAM_CONFIG.pollIntervalMs);
-// Primer chequeo inmediato
 setTimeout(pollTelegramUpdates, 1000);
 
 // Exportar funciones para uso en app.js
 window.TelegramService = {
+  OFFICIAL_BOT_TOKEN: OFFICIAL_BOT_TOKEN,
   CONFIG: TELEGRAM_CONFIG,
   loadConfig: loadTelegramConfig,
   saveConfig: saveTelegramConfig,
@@ -417,6 +439,7 @@ window.TelegramService = {
   parseAndRegister: parseAndRegisterReading,
   checkInactivityAlerts: checkInactivityAlerts,
   sendMessage: sendTelegramMessage,
+  detectChatId: detectChatIdFromUpdates,
   clearActiveAlert: clearActiveAlert,
   getActiveAlerts: getActiveAlerts,
   pollUpdates: pollTelegramUpdates
