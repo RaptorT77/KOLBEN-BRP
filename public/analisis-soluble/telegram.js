@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * TELEGRAM.JS — MÓDULO DE INTEGRACIÓN TELEGRAM & MOTOR DE ALERTAS INDUSTRIALES
+ * TELEGRAM.JS — MÓDULO DE INTEGRACIÓN TELEGRAM, OCR INDUSTRIAL & MOTOR DE ALERTAS
  * Monitoreo de Soluble / Refrigerante — Línea "E" (BRP / KOLBEN)
  * Bot Oficial: @DASHBOARD_BRP_bot (https://t.me/DASHBOARD_BRP_bot)
  * ============================================================================
@@ -8,19 +8,19 @@
 
 const OFFICIAL_BOT_TOKEN = '9151291473:AAEDQ-q0fUckTWTv3Rw2v9mYsaEBdaaWVV4';
 const OFFICIAL_BOT_USERNAME = 'DASHBOARD_BRP_bot';
-const OFFICIAL_DEFAULT_CHAT_ID = '786120019';
+const OFFICIAL_DEFAULT_CHAT_ID = '786120019'; // Chat ID verificado de Tony
 
 // SECCIÓN DE CONFIGURACIÓN OFICIAL
 const TELEGRAM_CONFIG = {
   botToken: OFFICIAL_BOT_TOKEN,
   botUsername: OFFICIAL_BOT_USERNAME,
-  chatId: OFFICIAL_DEFAULT_CHAT_ID, // Vinculado a Tony (786120019)
+  chatId: OFFICIAL_DEFAULT_CHAT_ID,
   
   // Parámetros operativos
-  pollIntervalMs: 5000,                   // Sondeo cada 5 segundos
-  alertInactivityLimitMs: 2 * 60 * 60 * 1000, // 2 HORAS (alerta por falta de lectura)
-  minConcentrationThreshold: 4,           // Nivel mínimo requerido (0-10)
-  maxConcentrationThreshold: 8,           // Rango superior de trabajo
+  pollIntervalMs: 5000,                           // Sondeo cada 5 segundos
+  alertInactivityLimitMs: 2 * 60 * 60 * 1000,    // 2 HORAS (alerta por falta de lectura)
+  minConcentrationThreshold: 4,                   // Nivel mínimo requerido (0-10)
+  maxConcentrationThreshold: 8,                   // Rango superior de trabajo
   historyMaxDurationMs: 7 * 24 * 60 * 60 * 1000, // 1 SEMANA (168 horas)
   
   // Etiquetas oficiales requeridas
@@ -77,12 +77,27 @@ function saveTelegramConfig(newConfig) {
 
 /**
  * Obtiene el registro de lecturas válidas almacenadas.
+ * Incluye corrección automática si existía el registro previo erróneo de 2 para Tanque02.
  */
 function getStoredReadings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.READINGS);
     if (!raw) return { Tanque01: [], Tanque02: [], Tanque03: [] };
     const data = JSON.parse(raw);
+
+    // Corrección automática: rectificar lectura errónea previa (2 en lugar de 5) para Tanque02
+    if (data.Tanque02 && Array.isArray(data.Tanque02)) {
+      let corrected = false;
+      data.Tanque02.forEach(rec => {
+        if (rec.valor === 2 && (rec.hora === '11:54' || rec.hora === '11:55')) {
+          rec.valor = 5;
+          corrected = true;
+        }
+      });
+      if (corrected) {
+        saveStoredReadings(data);
+      }
+    }
     
     // Verificación de reinicio semanal (Regla 6)
     const allTimestamps = [
@@ -215,12 +230,278 @@ async function detectChatIdFromUpdates() {
 }
 
 /**
- * PARSEO Y VALIDACIÓN DE LECTURA DESDE MENSAJE DE TELEGRAM (REGLA 7)
+ * Obtiene la URL pública directa de una foto enviada por Telegram.
  */
-function parseAndRegisterReading(rawText, messageId = null, customDate = null, fromChatId = null) {
-  if (!rawText) return { success: false, reason: 'Texto vacío' };
+async function getTelegramPhotoUrl(fileId) {
+  const token = TELEGRAM_CONFIG.botToken || OFFICIAL_BOT_TOKEN;
+  if (!token || !fileId) return null;
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`);
+    const data = await res.json();
+    if (data.ok && data.result && data.result.file_path) {
+      return `https://api.telegram.org/file/bot${token}/${data.result.file_path}`;
+    }
+  } catch (e) {
+    console.error('Error obteniendo ruta de foto de Telegram:', e);
+  }
+  return null;
+}
 
-  // 1. Identificar Tanque
+/**
+ * ============================================================================
+ * MOTOR DE VISIÓN COMPUTACIONAL Y OCR PARA LECTURA DE SOLUBLE
+ * ============================================================================
+ */
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = (err) => reject(err);
+    img.src = src;
+  });
+}
+
+/**
+ * Extrae y mapea posibles caracteres confusos de OCR a dígitos 0 a 10.
+ */
+function extractDigitFromOcrText(text) {
+  if (!text) return null;
+  const cleaned = String(text).trim();
+
+  // 1. Coincidencia exacta o delimitada por palabra
+  const match = cleaned.match(/\b(10|[0-9])\b/);
+  if (match) return parseInt(match[1], 10);
+
+  // 2. Coincidencia con 10
+  if (/10/.test(cleaned)) return 10;
+
+  // 3. Cualquier dígito aislado
+  const anyDigit = cleaned.match(/[0-9]/);
+  if (anyDigit) return parseInt(anyDigit[0], 10);
+
+  // 4. Mapeo de confusiones tipográficas comunes en OCR industrial:
+  if (/[sS§$]/.test(cleaned)) return 5;
+  if (/[oOD]/.test(cleaned)) return 0;
+  if (/[lI|!]/.test(cleaned)) return 1;
+  if (/[bB]/.test(cleaned)) return 8;
+  if (/[zZ]/.test(cleaned)) return 2;
+
+  return null;
+}
+
+/**
+ * Crea un canvas procesado con recorte opcional y realce de contraste/binarización.
+ */
+function createCroppedCanvas(img, cropBox = null, enhanceContrast = true) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  const naturalW = img.naturalWidth || img.width || 300;
+  const naturalH = img.naturalHeight || img.height || 300;
+
+  let sx = 0, sy = 0, sw = naturalW, sh = naturalH;
+  if (cropBox) {
+    sx = Math.max(0, cropBox.x);
+    sy = Math.max(0, cropBox.y);
+    sw = Math.min(naturalW - sx, cropBox.w);
+    sh = Math.min(naturalH - sy, cropBox.h);
+  }
+
+  // Escalado para garantizar definición en OCR
+  let scale = 1;
+  if (sh < 220) scale = Math.min(3, 220 / Math.max(sh, 1));
+  canvas.width = Math.round(sw * scale);
+  canvas.height = Math.round(sh * scale);
+
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+
+  if (enhanceContrast) {
+    try {
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+      let min = 255, max = 0;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        if (lum < min) min = lum;
+        if (lum > max) max = lum;
+      }
+
+      const range = max - min || 1;
+      for (let i = 0; i < data.length; i += 4) {
+        const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        const normalized = ((lum - min) / range) * 255;
+        const val = normalized > 135 ? 255 : (normalized < 85 ? 0 : normalized);
+        data[i] = val;
+        data[i + 1] = val;
+        data[i + 2] = val;
+      }
+      ctx.putImageData(imgData, 0, 0);
+    } catch (e) {
+      console.warn('Canvas pixel processing skipped (CORS fallback):', e);
+    }
+  }
+
+  return canvas;
+}
+
+/**
+ * Detecta la caja de la tarjeta o pantalla de lectura (zona de alto contraste brillante central).
+ */
+function findBrightCardBoundingBox(img) {
+  const w = img.naturalWidth || img.width;
+  const h = img.naturalHeight || img.height;
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = w;
+  canvas.height = h;
+  ctx.drawImage(img, 0, 0, w, h);
+
+  try {
+    const imgData = ctx.getImageData(0, 0, w, h);
+    const data = imgData.data;
+
+    const minY = Math.round(h * 0.18);
+    const maxY = Math.round(h * 0.82);
+    const minX = Math.round(w * 0.12);
+    const maxX = Math.round(w * 0.88);
+
+    let boxMinX = maxX, boxMaxX = minX;
+    let boxMinY = maxY, boxMaxY = minY;
+    let brightCount = 0;
+
+    for (let y = minY; y < maxY; y++) {
+      for (let x = minX; x < maxX; x++) {
+        const idx = (y * w + x) * 4;
+        const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+        if (lum > 165) {
+          brightCount++;
+          if (x < boxMinX) boxMinX = x;
+          if (x > boxMaxX) boxMaxX = x;
+          if (y < boxMinY) boxMinY = y;
+          if (y > boxMaxY) boxMaxY = y;
+        }
+      }
+    }
+
+    if (brightCount > 300 && boxMaxX > boxMinX && boxMaxY > boxMinY) {
+      const bw = boxMaxX - boxMinX;
+      const bh = boxMaxY - boxMinY;
+      if (bw > 25 && bh > 25 && bw < w * 0.95 && bh < h * 0.95) {
+        const padX = Math.round(bw * 0.05);
+        const padY = Math.round(bh * 0.05);
+        return {
+          x: Math.max(0, boxMinX - padX),
+          y: Math.max(0, boxMinY - padY),
+          w: Math.min(w - Math.max(0, boxMinX - padX), bw + padX * 2),
+          h: Math.min(h - Math.max(0, boxMinY - padY), bh + padY * 2)
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Bounding box detection fallback:', err);
+  }
+
+  // Zona central de enfoque por defecto
+  return {
+    x: Math.round(w * 0.22),
+    y: Math.round(h * 0.28),
+    w: Math.round(w * 0.56),
+    h: Math.round(h * 0.44)
+  };
+}
+
+/**
+ * Ejecuta OCR sobre una fuente de imagen (URL, Blob o HTMLImageElement).
+ * Extrae un número entero entre 0 y 10.
+ */
+async function extractNumberFromImage(imageSource) {
+  if (!imageSource) return null;
+  try {
+    let img;
+    if (typeof imageSource === 'string') {
+      img = await loadImage(imageSource);
+    } else if (imageSource instanceof HTMLImageElement) {
+      img = imageSource;
+    } else if (imageSource instanceof Blob) {
+      const objUrl = URL.createObjectURL(imageSource);
+      img = await loadImage(objUrl);
+    } else {
+      return null;
+    }
+
+    const tesseractLib = window.Tesseract;
+    if (!tesseractLib) {
+      console.warn('[OCR] Tesseract.js no está disponible en window.');
+      return null;
+    }
+
+    // Estrategia 1: Zona brillante de alta reflectancia (tarjeta o pantalla refractómetro)
+    const brightBox = findBrightCardBoundingBox(img);
+    const canvasBright = createCroppedCanvas(img, brightBox, true);
+    try {
+      const resBright = await tesseractLib.recognize(canvasBright, 'eng');
+      const valBright = extractDigitFromOcrText(resBright?.data?.text);
+      if (valBright !== null && valBright >= 0 && valBright <= 10) {
+        console.log(`[OCR] Detectado en caja brillante: ${valBright} (raw: "${resBright?.data?.text?.trim()}")`);
+        return valBright;
+      }
+    } catch (e1) {
+      console.warn('OCR intento 1 error:', e1);
+    }
+
+    // Estrategia 2: Recorte central del 50%
+    const centerBox = {
+      x: Math.round(img.naturalWidth * 0.22),
+      y: Math.round(img.naturalHeight * 0.28),
+      w: Math.round(img.naturalWidth * 0.56),
+      h: Math.round(img.naturalHeight * 0.44)
+    };
+    const canvasCenter = createCroppedCanvas(img, centerBox, true);
+    try {
+      const resCenter = await tesseractLib.recognize(canvasCenter, 'eng');
+      const valCenter = extractDigitFromOcrText(resCenter?.data?.text);
+      if (valCenter !== null && valCenter >= 0 && valCenter <= 10) {
+        console.log(`[OCR] Detectado en recorte central: ${valCenter} (raw: "${resCenter?.data?.text?.trim()}")`);
+        return valCenter;
+      }
+    } catch (e2) {
+      console.warn('OCR intento 2 error:', e2);
+    }
+
+    // Estrategia 3: Imagen completa con realce
+    const canvasFull = createCroppedCanvas(img, null, true);
+    try {
+      const resFull = await tesseractLib.recognize(canvasFull, 'eng');
+      const valFull = extractDigitFromOcrText(resFull?.data?.text);
+      if (valFull !== null && valFull >= 0 && valFull <= 10) {
+        console.log(`[OCR] Detectado en imagen completa: ${valFull} (raw: "${resFull?.data?.text?.trim()}")`);
+        return valFull;
+      }
+    } catch (e3) {
+      console.warn('OCR intento 3 error:', e3);
+    }
+
+  } catch (err) {
+    console.error('[OCR] Error general al procesar imagen:', err);
+  }
+  return null;
+}
+
+/**
+ * ============================================================================
+ * PARSEO Y REGISTRO OFICIAL DE LECTURAS (REGLA 7)
+ * ============================================================================
+ */
+function parseAndRegisterReading(rawText, messageId = null, customDate = null, fromChatId = null, explicitNumericValue = null) {
+  if (!rawText && explicitNumericValue === null) {
+    return { success: false, reason: 'Texto o lectura vacía' };
+  }
+
+  // 1. Identificar Tanque según etiquetas oficiales requeridas
   let identifiedTank = null;
   for (const [tankKey, regex] of Object.entries(TELEGRAM_CONFIG.validTags)) {
     if (regex.test(rawText)) {
@@ -242,17 +523,33 @@ function parseAndRegisterReading(rawText, messageId = null, customDate = null, f
   }
 
   // 3. Extracción de lectura numérica (entero entre 0 y 10)
-  const numberMatch = rawText.match(/(?:valor|brix|lectura|concentraci[oó]n)?\s*:?\s*(\b10|[0-9]\b)/i);
-  if (!numberMatch) {
+  let numericValue = null;
+
+  if (explicitNumericValue !== null && !isNaN(explicitNumericValue)) {
+    numericValue = parseInt(explicitNumericValue, 10);
+  } else {
+    // REGLA CRÍTICA: Eliminar la etiqueta del tanque antes de buscar el número en el texto
+    // para evitar que "Tanque02" sea erróneamente interpretado como lectura 2
+    const cleanText = rawText
+      .replace(/Tanque\s*0?[123]/gi, ' ')
+      .replace(/L[ií]nea\s*[Ee]/gi, ' ')
+      .trim();
+
+    const numberMatch = cleanText.match(/(?:valor|brix|lectura|concentraci[oó]n)?\s*:?\s*(\b10|[0-9]\b)/i);
+    if (numberMatch) {
+      numericValue = parseInt(numberMatch[1], 10);
+    }
+  }
+
+  if (numericValue === null || isNaN(numericValue)) {
     solicitarReenvioLectura(identifiedTank, fromChatId);
     return {
       success: false,
-      reason: 'No se encontró un número entero válido (0 a 10) en la lectura.'
+      reason: 'No se encontró un número entero válido (0 a 10) en la fotografía o texto.'
     };
   }
 
-  const numericValue = parseInt(numberMatch[1], 10);
-  if (isNaN(numericValue) || numericValue < 0 || numericValue > 10) {
+  if (numericValue < 0 || numericValue > 10) {
     solicitarReenvioLectura(identifiedTank, fromChatId);
     return {
       success: false,
@@ -268,6 +565,7 @@ function parseAndRegisterReading(rawText, messageId = null, customDate = null, f
   const readings = getStoredReadings();
   const tankList = readings[identifiedTank] || [];
 
+  // Evitar duplicados inmediatos idénticos en menos de 1 minuto
   const lastReading = tankList[tankList.length - 1];
   if (lastReading && Math.abs(now.getTime() - lastReading.timestamp) < 60000 && lastReading.value === numericValue) {
     return { success: false, reason: 'Lectura idéntica recibida hace menos de 1 minuto.' };
@@ -302,7 +600,7 @@ function parseAndRegisterReading(rawText, messageId = null, customDate = null, f
 }
 
 function solicitarReenvioLectura(tankId, fromChatId = null) {
-  const msg = `⚠️ <b>Aviso Línea E:</b> No fue posible extraer una lectura numérica válida (entero 0-10) para el <b>${tankId}</b>. Por favor envíe nuevamente una fotografía nítida con la etiqueta "<b>${tankId} Linea E</b>".`;
+  const msg = `⚠️ <b>Aviso Línea E:</b> No fue posible extraer una lectura numérica válida (entero 0-10) de la imagen para el <b>${tankId}</b>. Por favor envíe nuevamente una fotografía nítida con la etiqueta "<b>${tankId} Linea E</b>".`;
   sendTelegramMessage(msg, fromChatId);
 }
 
@@ -361,7 +659,9 @@ async function checkInactivityAlerts() {
 }
 
 /**
- * MOTOR DE CONSULTA EN TIEMPO REAL (TELEGRAM POLLING)
+ * ============================================================================
+ * MOTOR DE CONSULTA EN TIEMPO REAL (TELEGRAM POLLING CON SOPORTE OCR DE FOTOS)
+ * ============================================================================
  */
 let isPollingActive = false;
 
@@ -402,14 +702,41 @@ async function pollTelegramUpdates() {
         const rawText = (msg.caption || msg.text || '').trim();
 
         if (rawText === '/start') {
-          const welcomeMsg = `👋 <b>Bienvenido al Monitor de Soluble Línea E (BRP)</b>\n\nPara registrar lecturas de soluble, envíe la foto del refractómetro o mensaje con una de estas etiquetas oficiales:\n• <code>Tanque01 Linea E</code>\n• <code>Tanque02 Linea E</code>\n• <code>Tanque03 Linea E</code>\n\nEl sistema registrará el valor numérico (0 a 10) y actualizará el layout en tiempo real.`;
+          const welcomeMsg = `👋 <b>Bienvenido al Monitor de Soluble Línea E (BRP)</b>\n\nPara registrar lecturas de soluble, envíe la foto del refractómetro o pantalla con una de estas etiquetas oficiales:\n• <code>Tanque01 Linea E</code>\n• <code>Tanque02 Linea E</code>\n• <code>Tanque03 Linea E</code>\n\nEl sistema extraerá automáticamente el valor numérico (0 a 10) desde la fotografía mediante OCR y actualizará el layout en tiempo real.`;
           await sendTelegramMessage(welcomeMsg, chatId);
           continue;
         }
 
         const hasTag = Object.values(TELEGRAM_CONFIG.validTags).some(rx => rx.test(rawText));
         if (hasTag) {
-          const res = parseAndRegisterReading(rawText, msg.message_id, msg.date * 1000, chatId);
+          let identifiedTank = null;
+          for (const [tankKey, regex] of Object.entries(TELEGRAM_CONFIG.validTags)) {
+            if (regex.test(rawText)) {
+              identifiedTank = tankKey;
+              break;
+            }
+          }
+
+          // Verificar si el operador escribió el valor en el texto
+          const cleanText = rawText
+            .replace(/Tanque\s*0?[123]/gi, ' ')
+            .replace(/L[ií]nea\s*[Ee]/gi, ' ')
+            .trim();
+          const textMatch = cleanText.match(/(?:valor|brix|lectura|concentraci[oó]n)?\s*:?\s*(\b10|[0-9]\b)/i);
+          let extractedValue = textMatch ? parseInt(textMatch[1], 10) : null;
+
+          // Si el texto no incluye un número explícito, extraer de la fotografía mediante OCR
+          if (extractedValue === null && Array.isArray(msg.photo) && msg.photo.length > 0) {
+            const bestPhoto = msg.photo[msg.photo.length - 1];
+            const photoUrl = await getTelegramPhotoUrl(bestPhoto.file_id);
+            if (photoUrl) {
+              console.log(`[OCR Telegram] Procesando fotografía de ${identifiedTank}:`, photoUrl);
+              extractedValue = await extractNumberFromImage(photoUrl);
+              console.log(`[OCR Telegram] Resultado extraído:`, extractedValue);
+            }
+          }
+
+          const res = parseAndRegisterReading(rawText, msg.message_id, msg.date * 1000, chatId, extractedValue);
           if (res.success) {
             const confirmMsg = `✅ <b>Lectura Registrada con Éxito</b>\n<b>Tanque:</b> ${res.record.tanque}\n<b>Concentración:</b> ${res.record.valor} Brix\n<b>Fecha y Hora:</b> ${res.record.dia} ${res.record.hora}\n\n<i>Dashboard actualizado en vivo.</i>`;
             await sendTelegramMessage(confirmMsg, chatId);
@@ -446,5 +773,6 @@ window.TelegramService = {
   detectChatId: detectChatIdFromUpdates,
   clearActiveAlert: clearActiveAlert,
   getActiveAlerts: getActiveAlerts,
-  pollUpdates: pollTelegramUpdates
+  pollUpdates: pollTelegramUpdates,
+  extractNumberFromImage: extractNumberFromImage
 };

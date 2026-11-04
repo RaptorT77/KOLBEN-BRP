@@ -504,6 +504,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Simulación y prueba de OCR desde archivo de imagen (Regla 7)
+  const btnSimImageSubmit = document.getElementById('btnSimImageSubmit');
+  const simImageInput = document.getElementById('simImageInput');
+  const simTankSelect = document.getElementById('simTankSelect');
+  const simOcrStatus = document.getElementById('simOcrStatus');
+
+  if (btnSimImageSubmit && simImageInput) {
+    btnSimImageSubmit.addEventListener('click', async () => {
+      const file = simImageInput.files && simImageInput.files[0];
+      if (!file) {
+        alert('Por favor selecciona un archivo de imagen primero.');
+        return;
+      }
+
+      const tank = simTankSelect ? simTankSelect.value : 'Tanque02';
+      const label = `${tank} Linea E`;
+
+      if (simOcrStatus) simOcrStatus.textContent = 'Analizando imagen con OCR...';
+      btnSimImageSubmit.disabled = true;
+
+      try {
+        const extractedValue = await window.TelegramService.extractNumberFromImage(file);
+        if (extractedValue !== null) {
+          const res = window.TelegramService.parseAndRegister(label, null, null, null, extractedValue);
+          if (res.success) {
+            if (simOcrStatus) simOcrStatus.textContent = `✅ OCR Exitoso: ${extractedValue} Brix registrado para ${tank}.`;
+            alert(`✅ OCR Exitoso!\nTanque: ${res.record.tanque}\nValor extraído de imagen: ${res.record.valor} Brix\nFecha y Hora: ${res.record.dia} ${res.record.hora}`);
+            renderAllCharts();
+            updateIndicatorStatuses();
+          } else {
+            if (simOcrStatus) simOcrStatus.textContent = `❌ Error: ${res.reason}`;
+            alert(`Error al registrar:\n${res.reason}`);
+          }
+        } else {
+          if (simOcrStatus) simOcrStatus.textContent = '❌ No se pudo extraer un dígito numérico (0-10) de la imagen.';
+          alert('No se pudo extraer una lectura válida (0-10) de la imagen.');
+        }
+      } catch (err) {
+        if (simOcrStatus) simOcrStatus.textContent = `Error: ${err.message}`;
+        alert(`Error procesando OCR: ${err.message}`);
+      } finally {
+        btnSimImageSubmit.disabled = false;
+      }
+    });
+  }
+
   // Cargar datos demo de referencia (para verificar visualmente las 3 gráficas como en la imagen)
   if (btnLoadDemoData) {
     btnLoadDemoData.addEventListener('click', () => {
