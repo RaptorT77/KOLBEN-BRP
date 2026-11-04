@@ -313,6 +313,23 @@
           </button>
         </div>
 
+        <!-- Probador de Extracción OCR desde Imagen (Regla 7) -->
+        <div class="form-group" style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #cbd5e1;">
+          <label class="form-label">Probar Reconocimiento de Imagen (OCR)</label>
+          <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+            <input type="file" id="simImageInput" accept="image/*" class="form-input" style="font-size: 11px; padding: 4px; flex: 1;" />
+            <select id="simTankSelect" class="form-input" style="width: 115px; font-size: 11px; padding: 4px;">
+              <option value="Tanque01">Tanque01</option>
+              <option value="Tanque02" selected>Tanque02</option>
+              <option value="Tanque03">Tanque03</option>
+            </select>
+          </div>
+          <button id="btnSimImageSubmit" class="btn-secondary" style="margin-top: 6px; width: 100%; font-size: 11px;">
+            Ejecutar OCR y Registrar Lectura
+          </button>
+          <div id="simOcrStatus" style="font-size: 11px; margin-top: 4px; color: #475569; min-height: 16px;"></div>
+        </div>
+
         <div style="margin-top: 14px; display: flex; gap: 8px;">
           <button id="btnLoadDemoData" class="btn-secondary" style="flex: 1; font-size: 11px;">
             Cargar Datos de Referencia (Imagen)
@@ -334,6 +351,12 @@
   <div id="hmiTooltip" class="hmi-tooltip"></div>
 
   <!-- Scripts Modularizados (Separación HTML, CSS y JS) -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script>
+    if (!window.Tesseract) {
+      document.write('<script src="tesseract.min.js"><\/script>');
+    }
+  </script>
   <script src="telegram.js"></script>
   <script src="app.js"></script>
 </body>
