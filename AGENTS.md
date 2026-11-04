@@ -128,8 +128,31 @@ Al realizar modificaciones en el código, **SIEMPRE** deben actualizarse ambas r
    ```powershell
    git add -f out
    $tree = (git write-tree --prefix=out).Trim()
-   $commit = (git commit-tree $tree -m "deploy: update GitHub Pages build").Trim()
+   git fetch origin gh-pages
+   $parent = (git rev-parse origin/gh-pages).Trim()
+   $commit = (git commit-tree $tree -p $parent -m "deploy: update GitHub Pages build").Trim()
    git push origin "${commit}:refs/heads/gh-pages"
    git reset HEAD out
    ```
 5. **Verificar el sitio en vivo**: [https://raptort77.github.io/KOLBEN-BRP/](https://raptort77.github.io/KOLBEN-BRP/)
+
+---
+
+## 7. Módulo de Análisis de Soluble — Línea E (HMI, Telegram & OCR)
+
+### Reglas Operativas del Módulo
+- **Ubicación de Archivos**: `public/analisis-soluble/` (`index.html`, `style.css`, `app.js`, `telegram.js`, `tesseract.min.js`, `worker.min.js`).
+- **Bot Oficial de Telegram**: `@DASHBOARD_BRP_bot` (`https://t.me/DASHBOARD_BRP_bot`).
+- **Token Oficial**: `9151291473:AAEDQ-q0fUckTWTv3Rw2v9mYsaEBdaaWVV4`.
+- **Chat ID Oficial de Supervisión**: `786120019` (Tony / HCAA).
+- **Etiquetas Válidas Requeridas**:
+  - `Tanque01 Linea E`
+  - `Tanque02 Linea E`
+  - `Tanque03 Linea E`
+- **Sanitización de Etiquetas**: Siempre remover las etiquetas del tanque y "Linea E" del texto antes de evaluar si el operador incluyó un número, evitando falsos positivos con el número del tanque (ej. `Tanque02`).
+- **Visión Computacional y OCR**: Al recibir fotos (`msg.photo`), descargar vía `getFile`, pre-procesar en lienzo `<canvas>` (recorte de zona brillante, estiramiento de contraste y binarización) y ejecutar Tesseract.js para extraer el entero de 0 a 10 Brix con normalización de caracteres confusos (`s/S` -> `5`).
+- **Motor de Alertas**: Evaluar cada 5 segundos. Si transcurren más de 2 horas sin lectura en un tanque, enviar alerta a Telegram y mantener registro activo para no duplicar alertas.
+- **Gráficas e Histórico**: Escala de 24 horas continuas (0 a 10 Brix), navegación de hasta 1 semana hacia atrás y reinicio automático de la base de datos al cumplir 7 días.
+- **Descarga CSV**: Archivo delimitado por comas con UTF-8 BOM y 4 columnas: `Consecutivo,Día,Hora,Valor`.
+- **Independencia de Módulos**: Modificaciones en `analisis-soluble` no deben alterar ni reiniciar los datos o vistas del mapa de calor principal.
+

@@ -821,6 +821,186 @@
         Supabase Realtime resuelve los eventos por orden de llegada con latencia inferior a 50 milisegundos. Cuando el compañero marque una casilla, la verás actualizarse en tu pantalla sin tener que presionar F5 ni recargar.
       </div>
     </div>
+  </div>
+
+  <!-- ==================== PÁGINA 5: MÓDULO HMI DE MONITOREO DE SOLUBLE ==================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="header-brand">
+        <span class="header-pill">KOLBEN-BRP</span>
+        <span class="header-title-text">Manual de Operación &bull; Análisis de Soluble Línea E</span>
+      </div>
+      <div class="header-doc-id">Sección 6 &bull; Layout HMI & Gráficas</div>
+    </div>
+
+    <h2 class="section-heading">
+      <span class="num">6</span>
+      Módulo HMI: Monitoreo de Soluble / Refrigerante Línea &ldquo;E&rdquo;
+    </h2>
+    <p class="lead">
+      El sistema cuenta con una pantalla de supervisión HMI industrial dedicada al control de concentración de refrigerante soluble, accesible directamente mediante el botón superior <strong>&ldquo;Análisis de Soluble Linea E&rdquo;</strong> en la pantalla principal.
+    </p>
+
+    <div class="callout callout-success">
+      <div class="callout-title">🏭 Arquitectura del Layout Industrial (Línea &ldquo;E&rdquo; / BRP)</div>
+      <div class="callout-body">
+        El diagrama reproduce exactamente la distribución física de la nave: <strong>Transportador</strong>, <strong>OP10</strong> a <strong>OP40</strong>, estaciones de maquinado <strong>OP50.1, OP60.1, OP50.2, OP60.2, OP70.1, OP70.2, OP80</strong>, <strong>CASETA</strong>, <strong>Certificación</strong>, bucle de <strong>Lavadora</strong> y las agrupaciones de alimentación:
+        <ul style="margin-left: 18px; margin-top: 4px; line-height: 1.45;">
+          <li><strong>Tanque01</strong>: Alimenta con recuadro punteado a <strong>OP50.1</strong> y <strong>OP60.1</strong>.</li>
+          <li><strong>Tanque02</strong>: Alimenta con recuadro punteado a <strong>Op50.2</strong> y <strong>OP60.2</strong>.</li>
+          <li><strong>Tanque03</strong>: Alimenta con recuadro punteado a <strong>Op70.1</strong>, <strong>Op70.2</strong> y <strong>Op80</strong>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <table class="status-table">
+      <thead>
+        <tr>
+          <th style="width: 18%;">Indicador Visual</th>
+          <th style="width: 27%;">Estado Operativo</th>
+          <th style="width: 32%;">Condición de Activación</th>
+          <th style="width: 23%;">Comportamiento</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge-preview badge-ok">VERDE</span></td>
+          <td><strong>En Parámetros (OK)</strong></td>
+          <td>Concentración de soluble dentro del rango óptimo (&ge; 4 Brix).</td>
+          <td>Fondo verde fijo; operación normal.</td>
+        </tr>
+        <tr>
+          <td><span class="badge-preview badge-pend" style="animation: pulse 1s infinite;">PARPADEO</span></td>
+          <td><strong>Alerta Crítica (Rojo Parpadeante)</strong></td>
+          <td>Concentración &lt; 4 Brix o más de 24 horas sin lectura capturada.</td>
+          <td>Animación de parpadeo continuo de advertencia.</td>
+        </tr>
+        <tr>
+          <td><span class="badge-preview badge-pend">ROJO FIJO</span></td>
+          <td><strong>Operación Deshabilitada</strong></td>
+          <td>Estaciones estructuralmente inactivas (OP60.1 y OP60.2).</td>
+          <td>Fondo rojo fijo sin parpadeo (diseño oficial).</td>
+        </tr>
+        <tr>
+          <td><span class="badge-preview badge-dis">GRIS</span></td>
+          <td><strong>Fuera de Línea</strong></td>
+          <td>Sin registros históricos disponibles para el tanque.</td>
+          <td>Fondo gris neutro.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 class="section-heading">
+      <span class="num">7</span>
+      Gráficas Superiores de 24 Horas, Histórico Semanal y Descarga CSV
+    </h2>
+    <p class="lead">
+      La cabecera superior despliega 3 gráficas independientes de SVG vectorial para <strong>Tanque01</strong>, <strong>Tanque02</strong> y <strong>Tanque03</strong> con las siguientes reglas operativas:
+    </p>
+
+    <div class="step-card">
+      <div class="step-number">📈</div>
+      <div class="step-body">
+        <div class="step-title">Ejes y Muestras en Vivo (24 Horas)</div>
+        <div class="step-desc">
+          <strong>Eje Y:</strong> Concentración de soluble (número entero entre 0 y 10 Brix).<br>
+          <strong>Eje X:</strong> Escala de 24 horas con un punto por hora. Cada nueva captura desplaza automáticamente la vista hacia la derecha, manteniendo visible en vivo la ventana de las últimas 24 muestras.
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-number">⏪</div>
+      <div class="step-body">
+        <div class="step-title">Navegación Histórica de 1 Semana y Reinicio Automático</div>
+        <div class="step-desc">
+          Las flechas <strong>&larr; Histórico Anterior</strong> y <strong>Histórico Siguiente &rarr;</strong> permiten navegar hacia atrás en ventanas de 24 horas hasta cubrir <strong>1 semana completa (168 horas)</strong>. Al completarse los 7 días de muestras, el motor reinicia la base de datos automáticamente e inicia un nuevo ciclo semanal.
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-number">📥</div>
+      <div class="step-body">
+        <div class="step-title">Descarga Oficial en Formato CSV (Excel)</div>
+        <div class="step-desc">
+          El botón <strong>&ldquo;Descargar CSV&rdquo;</strong> en la barra de navegación genera y descarga de inmediato un archivo con codificación <strong>UTF-8</strong> (con BOM para compatibilidad total con Microsoft Excel en español), delimitado por comas, con las 4 columnas exactas requeridas: <code>Consecutivo,Día,Hora,Valor</code>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PÁGINA 6: TELEGRAM, OCR Y CRÉDITOS ==================== -->
+  <div class="page">
+    <div class="header-bar">
+      <div class="header-brand">
+        <span class="header-pill">KOLBEN-BRP</span>
+        <span class="header-title-text">Manual de Operación &bull; Análisis de Soluble Línea E</span>
+      </div>
+      <div class="header-doc-id">Sección 8 &bull; Telegram, OCR & Alertas</div>
+    </div>
+
+    <h2 class="section-heading">
+      <span class="num">8</span>
+      Captura por Telegram, Visión Computacional (OCR) y Alertas de 2H
+    </h2>
+    <p class="lead">
+      Las lecturas de soluble son capturadas directamente en piso de producción por los operadores a través del bot oficial de Telegram, eliminando capturas manuales erróneas y digitalizando los valores mediante reconocimiento óptico de caracteres:
+    </p>
+
+    <div class="callout callout-success">
+      <div class="callout-title">🤖 Bot Oficial de Telegram</div>
+      <div class="callout-body">
+        <strong>Nombre del Bot:</strong> <code>@DASHBOARD_BRP_bot</code> &bull; <strong>Enlace directo:</strong> <span class="url-link">https://t.me/DASHBOARD_BRP_bot</span><br>
+        Para vincular tu cuenta o grupo de supervisión, simplemente envía <code>/start</code> al bot. Tu Chat ID se asociará automáticamente al sistema.
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-number">📸</div>
+      <div class="step-body">
+        <div class="step-title">Flujo de Envío de Muestras del Operador</div>
+        <div class="step-desc">
+          1. El operador toma una fotografía clara del refractómetro o pantalla de lectura.<br>
+          2. Adjunta la foto en Telegram escribiendo exactamente una de las tres etiquetas oficiales en el pie de foto:
+          <ul style="margin-top: 3px; margin-left: 18px; line-height: 1.4;">
+            <li><code>Tanque01 Linea E</code></li>
+            <li><code>Tanque02 Linea E</code></li>
+            <li><code>Tanque03 Linea E</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-number">👁️</div>
+      <div class="step-body">
+        <div class="step-title">Extracción Inteligente por Visión OCR (Tesseract Engine)</div>
+        <div class="step-desc">
+          El servidor de polling descarga la foto en alta resolución y aplica pre-procesamiento en un lienzo (<canvas>) aislando la zona de alto contraste, ejecutando binarización y extrayendo el número entero (0 a 10 Brix).<br>
+          <em>Prevención de Falsos Positivos:</em> La etiqueta del tanque se aísla rigurosamente para evitar que números del texto (como el <code>02</code> de <code>Tanque02</code>) interfieran con el número visual real capturado en la imagen.
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-number">⏰</div>
+      <div class="step-body">
+        <div class="step-title">Motor Automático de Alertas por Inactividad (2 Horas)</div>
+        <div class="step-desc">
+          Si transcurren <strong>más de 2 horas</strong> sin que se reciba una lectura válida para cualquiera de los tres tanques, el sistema envía automáticamente una alerta profesional a Telegram indicando:<br>
+          <em>&ldquo;⚠️ Aviso de Mantenimiento Línea E: Se requiere enviar la lectura actual del soluble para el [Tanque]. Han transcurrido más de 2 horas sin registro.&rdquo;</em><br>
+          El motor evita envíos repetitivos mientras la alerta permanezca activa.
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">🧪 Probador de OCR y Simulador Integrado</div>
+      <div class="callout-body">
+        En el panel de configuración (icono de engrane ⚙️), dispones de un probador para subir cualquier fotografía desde el navegador y evaluar el OCR en tiempo real, así como un simulador de mensajes de texto para pruebas rápidas de laboratorio.
+      </div>
+    </div>
 
     <!-- ==================== BLOQUE DE CRÉDITOS OFICIALES AL FINAL DEL MANUAL ==================== -->
     <div style="margin-top: 14px; padding: 12px 16px; background: linear-gradient(135deg, #0f172a 0%, #173D60 100%); border-radius: 10px; color: #ffffff; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); page-break-inside: avoid;">
@@ -830,7 +1010,7 @@
             Créditos Oficiales de Desarrollo y Automatización
           </span>
           <div style="font-size: 7.5pt; color: #94a3b8;">
-            Relación de mantenimientos preventivos Linea &ldquo;E&rdquo; Producto 9X3 &bull; KOLBEN / BRP
+            Mapa de Calor &bull; Análisis de Soluble Línea &ldquo;E&rdquo; Producto 9X3 &bull; KOLBEN / BRP
           </div>
         </div>
         <div style="text-align: right;">

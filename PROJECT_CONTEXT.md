@@ -180,7 +180,78 @@ npm run build
 powershell -Command "New-Item -Path out\.nojekyll -ItemType File -Force"
 git add -f out
 $tree = (git write-tree --prefix=out).Trim()
-$commit = (git commit-tree $tree -m 'deploy: update GitHub Pages build').Trim()
-git push origin `"${commit}:refs/heads/gh-pages`"
+git fetch origin gh-pages
+$parent = (git rev-parse origin/gh-pages).Trim()
+$commit = (git commit-tree $tree -p $parent -m 'deploy: update GitHub Pages build').Trim()
+git push origin "${commit}:refs/heads/gh-pages"
 git reset HEAD out
 ```
+
+---
+
+## 8. Módulo HMI de Monitoreo de Soluble / Refrigerante — Línea "E"
+
+### 1. Especificación del Layout Industrial
+- **Ruta de Acceso**: `/analisis-soluble/` (accesible mediante el botón ejecutivo "Análisis de Soluble Linea E" en el Header principal).
+- **Título Oficial**: `LAYOUT LINEA “E” / BRP`.
+- **Estructura de Secciones**:
+  - `Transportador`, `OP10`, `Op20`, `Op30`, `Op40`, `Op50.1`, `OP60.1`, `Op50.2`, `OP60.2`, `Op70.1`, `Op70.2`, `Op80`, `CASETA`, `Certificación`, `Red de Soluble General`, `Tanque01`, `Tanque02`, `Tanque03`, `Lavadora`.
+- **Agrupaciones Punteadas de Alimentación de Refrigerante**:
+  - `Tanque01`: alimenta a `OP50.1` y `OP60.1`.
+  - `Tanque02`: alimenta a `Op50.2` y `OP60.2`.
+  - `Tanque03`: alimenta a `Op70.1`, `Op70.2` y `Op80`.
+- **Lógica de Estados de Color**:
+  - **Verde fijo**: Concentración dentro de parámetros ($\ge 4$ Brix).
+  - **Rojo parpadeante**: Concentración por debajo de lo requerido ($< 4$ Brix) o más de 24 horas transcurridas desde la última captura.
+  - **Rojo fijo**: Operaciones estructuralmente deshabilitadas (`OP60.1` y `OP60.2`).
+  - **Gris fijo**: Sin registros capturados (fuera de línea).
+
+### 2. Gráficas de 24 Horas con Navegación Semanal
+- 3 gráficas vectoriales SVG para Tanque01, Tanque02 y Tanque03.
+- **Eje Y**: Concentración en escala entera de 0 a 10 Brix.
+- **Eje X**: 24 muestras horarias continuas en ventana deslizante automática.
+- **Histórico**: Navegación en ventanas de 24 horas hasta 1 semana (168 horas).
+- **Ciclo Semanal**: Al cumplirse 7 días de muestras, la base de datos se reinicia automáticamente para iniciar un nuevo ciclo operativo.
+- **Exportación CSV**: Archivo descargable con codificación UTF-8 BOM, delimitado por comas: `Consecutivo,Día,Hora,Valor`.
+
+---
+
+## 9. Arquitectura de Telegram, Visión OCR y Motor de Alertas
+
+### 1. Parámetros del Bot de Telegram
+- **Bot Oficial**: `@DASHBOARD_BRP_bot` (`https://t.me/DASHBOARD_BRP_bot`).
+- **Token de Acceso**: `9151291473:AAEDQ-q0fUckTWTv3Rw2v9mYsaEBdaaWVV4`.
+- **Chat ID Oficial de Supervisión**: `786120019` (Tony / HCAA).
+- **Mecanismo de Consulta**: Polling continuo cada 5 segundos mediante `getUpdates` con gestión de `offset` y detección automática del remitente.
+
+### 2. Pipeline de Visión Computacional y OCR (Tesseract.js)
+1. **Detección de Etiquetas Oficiales**:
+   - `Tanque01 Linea E`
+   - `Tanque02 Linea E`
+   - `Tanque03 Linea E`
+2. **Sanitización de Etiquetas y Prevención de Falsos Positivos**:
+   - Se limpian rigurosamente los prefijos `Tanque01`, `Tanque02`, `Tanque03` y `Linea E` antes de evaluar el texto. Esto erradicó el error previo donde el dígito `2` de `Tanque02` era interpretado erróneamente como concentración 2 en lugar de leer el `5` de la fotografía adjunta.
+3. **Descarga y Pre-procesamiento de Fotos**:
+   - Las fotos enviadas por los operarios se descargan en resolución completa vía `getFile` y `https://api.telegram.org/file/...` (habilitado con CORS nativo).
+   - Se crea un lienzo HTML5 (`<canvas>`) para aislar la zona central de alta reflectancia (tarjeta o visor óptico).
+   - Se aplica estiramiento de histograma dinámico y binarización para realzar los dígitos.
+4. **Reconocimiento Óptico y Normalización Tipográfica**:
+   - Tesseract procesa la imagen binarizada.
+   - Algoritmo de mapeo de caracteres ambiguos (`s/S/§/$` $\rightarrow$ `5`, `o/O/D` $\rightarrow$ `0`, `l/I/|/!` $\rightarrow$ `1`, `b/B` $\rightarrow$ `8`, `z/Z` $\rightarrow$ `2`).
+   - Se extrae el valor entero entre 0 y 10 Brix y se almacena con fecha, hora y consecutivo.
+
+### 3. Motor de Alertas Automáticas (Inactividad > 2 Horas)
+- Cada 5 segundos, el motor evalúa la última estampa de tiempo de cada uno de los 3 tanques.
+- Si han transcurrido más de 2 horas sin registro para un tanque, el bot genera y envía un mensaje a Telegram solicitando la captura inmediata de la concentración.
+- El sistema cuenta con memoria de alerta activa para evitar saturar el canal con mensajes redundantes.
+
+---
+
+## 10. Créditos Oficiales y Propiedad Intelectual
+
+- **Líder de Desarrollo y Automatización**: Jose Antonio De Jesus Galicia
+- **Contacto**: `dejesus.antonio@hcaa.com.mx`
+- **Organización**: HC Advanced Automation S.A de C.V. (`https://www.hcaa.com.mx/`)
+- **Sede**: Puebla, Puebla, MX
+- **Cliente**: BRP / Planta de Producción Línea E (KOLBEN)
+

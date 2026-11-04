@@ -34,3 +34,6 @@ next-env.d.ts
 
 # ocr data
 *.traineddata
+
+# chrome headless temp profile
+manual/temp_profile/
